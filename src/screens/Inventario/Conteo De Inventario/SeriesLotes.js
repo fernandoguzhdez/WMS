@@ -6,6 +6,7 @@ import {
     StyleSheet,
     View,
     ScrollView,
+    useWindowDimensions
 } from 'react-native';
 import { AuthContext } from '../../../contex/AuthContext';
 import { Icon } from 'react-native-elements'
@@ -28,6 +29,7 @@ export function SeriesLotes() {
     const [itemsPerPage, onItemsPerPageChange] = useState(numberOfItemsPerPageList[0]);
     const from = page * itemsPerPage;
     const to = Math.min((page + 1) * itemsPerPage, serialsLotes.length || lotes.length);
+    const windowsWidth = useWindowDimensions().width;
 
 
     useEffect(() => {
@@ -152,14 +154,14 @@ export function SeriesLotes() {
                                         </View> */}
                                     </Card>
                                     <Button
-                                        buttonStyle={{ backgroundColor: 'green', marginTop: 30 }}
+                                        buttonStyle={{ backgroundColor: '#00913f', marginTop: 30 }}
                                         onPress={() => { guardarConteoLote(cantidadSerieLote, textSerie, sysNumber); setCantidadSerieLote('0'); setIsLoading(true) }}
                                         icon={
                                             <Icon
                                                 name="save"
                                                 type='material-icons'
                                                 size={30}
-                                                color="white"
+                                                color="#ffff"
                                                 iconStyle={{ paddingHorizontal: 10 }}
                                             />
                                         }
@@ -174,7 +176,7 @@ export function SeriesLotes() {
 
                 {gestionItem == 'S' ?
                     <DataTable>
-                        <DataTable.Header style={{ backgroundColor: 'green' }}>
+                        <DataTable.Header style={{ backgroundColor: '#00913f' }}>
                             <DataTable.Title textStyle={styles.titleTable}>Serie/Lote</DataTable.Title>
                             <DataTable.Title textStyle={styles.titleTable}>Almacen</DataTable.Title>
                             <DataTable.Title textStyle={styles.titleTable}>Ubicacion</DataTable.Title>
@@ -182,10 +184,10 @@ export function SeriesLotes() {
                         </DataTable.Header>
                         {serialsLotes.slice(from, to).map((item) => (
                             <DataTable.Row key={item.idCode}>
-                                <DataTable.Cell>{item.idCode}</DataTable.Cell>
-                                <DataTable.Cell>{item.whsCode}</DataTable.Cell>
-                                <DataTable.Cell>{item.binCode}</DataTable.Cell>
-                                <DataTable.Cell>{item.quantityCounted}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.idCode}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.whsCode}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.binCode}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.quantityCounted}</DataTable.Cell>
                             </DataTable.Row>
                         ))}
                         <DataTable.Pagination
@@ -201,7 +203,7 @@ export function SeriesLotes() {
                         />
                     </DataTable> :
                     <DataTable>
-                        <DataTable.Header style={{ backgroundColor: 'green' }}>
+                        <DataTable.Header style={{ backgroundColor: '#00913f' }}>
                             <DataTable.Title textStyle={styles.titleTable}>Lote</DataTable.Title>
                             <DataTable.Title textStyle={styles.titleTable}>Almacen</DataTable.Title>
                             <DataTable.Title textStyle={styles.titleTable}>Ubicacion</DataTable.Title>
@@ -209,10 +211,10 @@ export function SeriesLotes() {
                         </DataTable.Header>
                         {lotes.slice(from, to).map((item) => (
                             <DataTable.Row key={item.idCode}>
-                                <DataTable.Cell>{item.idCode}</DataTable.Cell>
-                                <DataTable.Cell>{item.whsCode}</DataTable.Cell>
-                                <DataTable.Cell>{item.binCode}</DataTable.Cell>
-                                <DataTable.Cell>{item.quantityCounted}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.idCode}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.whsCode}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.binCode}</DataTable.Cell>
+                                <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.quantityCounted}</DataTable.Cell>
                             </DataTable.Row>
                         ))}
                         <DataTable.Pagination
@@ -235,9 +237,9 @@ export function SeriesLotes() {
 
 const styles = StyleSheet.create({
     titleTable: {
-        color: 'white',
+        color: '#ffff',
         fontWeight: 'bold',
-        fontSize: 18,
+        fontSize: 20,
         fontFamily: 'roboto',
     }
 });

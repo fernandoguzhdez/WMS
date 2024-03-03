@@ -176,7 +176,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                 <View style={{ flexDirection: 'row', height: 'auto', flexWrap: 'wrap' }}>
                     <ScrollView>
                         <DataTable>
-                            <DataTable.Header style={{ backgroundColor: 'green' }}>
+                            <DataTable.Header style={{ backgroundColor: '#00913f' }}>
                                 <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>{gestionItem == 'S' ? 'N° Serie' : 'N° Lote'}</DataTable.Title>
                                 <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>A. origen</DataTable.Title>
                                 <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>A. destino</DataTable.Title>
@@ -186,16 +186,16 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
 
                             {tablaSeriesLotesTransfer.slice(from, to).map((item, index) => (
                                 <DataTable.Row key={index}>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 24 : 18 }}>{item.idCode}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 24 : 18 }}>{item.FromWhsCode}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 24 : 18 }}>{item.ToWhsCode}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 24 : 18 }}>{item.quantityCounted}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 24 : 18 }}>
+                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.idCode}</DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.FromWhsCode}</DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.ToWhsCode}</DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.quantityCounted}</DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>
                                         <Icon
                                             name='trash'
                                             disabledStyle={{ backgroundColor: '#ffff' }}
                                             iconStyle={{ color: '#FF0000' }}
-                                            size={windowsWidth > 500 ? 30 : 20}
+                                            size={windowsWidth > 500 ? 35 : 20}
                                             type='font-awesome'
                                             containerStyle={{ paddingHorizontal: 5 }}
                                             onPress={() => { eliminarSerieLoteTransfer(index) }} />
@@ -292,7 +292,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                                                 searchPlaceholder='buscar...'
                                                 dropdownTextStyles={{ color: '#808080' }}
                                             /> :
-                                            <Text style={{ ...styles.textTitleCard, backgroundColor: 'red', fontSize: windowsWidth > 500 ? 26 : 14 }}>No hay ubicacion de destino para este almacen</Text>
+                                            <Text style={{ ...styles.textTitleCard, backgroundColor: '#FF0000', fontSize: windowsWidth > 500 ? 26 : 14 }}>No hay ubicacion de destino para este almacen</Text>
                                         }
                                         {gestionItem == 'L' ?
                                             <View style={{ flexDirection: 'row', marginTop: 10, width: '100%', justifyContent: 'center' }}>
@@ -376,7 +376,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
     titleTable: {
-        color: 'white',
+        color: '#ffff',
         fontWeight: 'bold',
         fontFamily: 'roboto'
     },

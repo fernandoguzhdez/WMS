@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     //VARIABLES PARA EL MODULO DE TRASLADOS
     const [barcodeItemTraslados, setBarcodeItemTraslados] = useState(null);
     const [itemsTraslados, setItemsTraslados] = useState([]);
+    const [tablaItemsTraslados, setTablaItemsTraslados] = useState([]);
     const [itemTraslado, setItemTraslado] = useState([]);
     const [serieLoteTransfer, setSerieLoteTransfer] = useState(null);
     const [isModalTransferirSerieLote, setIsModalTransferirSerieLote] = useState(false);
@@ -874,6 +875,7 @@ export const AuthProvider = ({ children }) => {
         axios.get(`${url}/api/SolTransferStock/Get_Details?IdDocumentCnt=${docEntry}`, { headers })
             .then(response => {
                 setItemsTraslados(response.data.owtr[0].items)
+                setTablaItemsTraslados(response.data.owtr[0].items)
                 console.log('Obteniendo items traslados...',response.data.owtr[0].items)
             })
             .catch(error => {
@@ -902,6 +904,7 @@ export const AuthProvider = ({ children }) => {
                         setContadorClic(false)
                         setBarcodeItemTraslados(null)
                         console.log('datos...', item)
+                        
                     }
                 })
                 setIsLoading(false);
@@ -912,7 +915,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const ComprobarSerieLoteTransfer = (gestionItem, itemCode, fromWhsCode, ubicacion, serieLoteT, accion) => {
-        console.log('Comprobando serie lote tranfer...', gestionItem + itemCode + fromWhsCode + ubicacion + serieLoteT + accion)
+        console.log('Comprobando serie lote tranfer...', itemTraslado)
         // Set headers
         const headers = {
             'Content-Type': 'application/json',
@@ -966,7 +969,6 @@ export const AuthProvider = ({ children }) => {
 
         tablaSeriesLotesTransfer.push(arrayPendiente[0]);
 
-
         // Set headers
         const headers = {
             'Content-Type': 'application/json',
@@ -1000,7 +1002,6 @@ export const AuthProvider = ({ children }) => {
                 Alert.alert('Info', '¡Transferencia realizada con exito!', [
                     {
                         text: 'OK', onPress: () => {
-                            setIsLoading(true)
                             cargarTablaSeriesLotesTransfer()
                         }
                     },
@@ -1024,7 +1025,6 @@ export const AuthProvider = ({ children }) => {
             .then(response => {
                 let arrayseriesLotes = response.data.SerialxManbach;
                 console.log('cargando tabla....', arrayseriesLotes)
-                setIsLoading(false)
                 if (arrayseriesLotes == undefined) {
                     setTablaSeriesLotesTransfer([]);
                 } else {
@@ -1037,6 +1037,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const ubicacionOrigen = (gestionItem, itemCode, fromWhsCode, toWhsCode) => {
+        console.log('item trasladoooo...', itemTraslado)
         almacenes.map((item) => {
             if (item.key == itemTraslado.fromWhsCode) {
                 if (item.ubicacion != null) {
@@ -1245,7 +1246,7 @@ export const AuthProvider = ({ children }) => {
                 setIndexTab, indexTab,
                 filtrarSerie, serialsLotes, setSerialsLotes, contadorSerie, setArraySeries, verificarEscaneoSerie, textSerie, setTextSerie, moduloScan, setModuloScan, lote, setLote, verificarLote, guardarConteoLote,
                 setIsLoadingItems, isLoadingItems, isLoadingCerrarConteo, setIsLoadingCerrarConteo, lotes, setLotes, cantidadSerieLote, setCantidadSerieLote, contadorClic, setContadorClic,
-                FiltrarItemsTraslados, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer,
+                FiltrarItemsTraslados, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados,tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer,
                 isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer,
                 selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes,
                 masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
