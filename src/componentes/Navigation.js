@@ -12,6 +12,7 @@ import { TransferenciaStock } from '../screens/Inventario/Solicitud De Transfere
 import { SolicitudTransferencia } from '../screens/Inventario/Solicitud De Transferencia/SolicitudTransferencia';
 import { ItemsTransferencia } from '../screens/Inventario/Solicitud De Transferencia/ItemsTransferencia';
 import { ListadoItemsTransfer } from '../screens/Inventario/Solicitud De Transferencia/ListadoItemsTransfer';
+import { ListadoSeriesLotes } from '../screens/Inventario/Solicitud De Transferencia/ListadoSeriesLotes';
 import { Articulos } from '../screens/Inventario/Conteo De Inventario/Articulos';
 import { Scanner } from '../componentes/Scanner';
 import { TabArticulos } from '../screens/Inventario/Conteo De Inventario/TabArticulos';
@@ -89,6 +90,7 @@ export function Navigation() {
                     })} />
                 <Stack.Screen name="ItemsTransferencia" component={ItemsTransferencia} options={{ headerShown: true, title: 'Solicitud de transferencia', }} />
                 <Stack.Screen name="ListadoItemsTransfer" component={ListadoItemsTransfer} options={{ headerShown: true, title: 'Articulo transferencia', }} />
+                <Stack.Screen name="ListadoSeriesLotes" component={ListadoSeriesLotes} options={{ headerShown: true, title: 'Listado Series/Lotes', }} />
                 <Stack.Screen name="TransferenciaSerieLote" component={TransferenciaSerieLote} options={{ headerShown: true, title: 'Captura de serie y lotes', }} />
                 <Stack.Screen name="DetalleInventario" component={DetalleInventario} options={{ headerShown: true, title: 'Detalle Inventario', }} />
                 <Stack.Screen name="DetalleInventarioSL" component={DetalleInventarioSL} options={{ headerShown: true, title: 'Detalle Inventario Series/Lotes', }} />

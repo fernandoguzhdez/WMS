@@ -1,7 +1,7 @@
 import React, { useEffect, useContext, useState } from 'react'
 import { AuthContext } from '../../../contex/AuthContext';
 import axios from 'axios';
-import { View, StyleSheet, Text, Alert, useWindowDimensions, FlatList, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, Alert, useWindowDimensions, FlatList, TouchableOpacity, ScrollView } from 'react-native';
 import { Input, Card, lightColors } from '@rneui/themed';
 import { Button, SearchBar, Icon } from 'react-native-elements'
 import Modal from "react-native-modal";
@@ -12,7 +12,7 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
 
     const { url, tokenInfo, setModuloScan, setIsLoading, isLoading, FiltrarItemsTraslados, barcodeItemTraslados, setBarcodeItemTraslados, setItemsTraslados, itemsTraslados, setItemTraslado,
         itemTraslado, getAlmacenes, almacenes, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ubicacionOrigen, splitCadenaEscaner, idCodeSL, setIdCodeSL, ComprobarSerieLoteTransfer,
-        tablaItemsTraslados, setTablaItemsTraslados } = useContext(AuthContext);
+        tablaItemsTraslados, cargarSeriesLotesDisp } = useContext(AuthContext);
     const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
     const [cantidad, setCantidad] = useState('1');
     const windowsWidth = useWindowDimensions().width;
@@ -37,7 +37,8 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
         setIdCodeSL([])
         setBarcodeItemTraslados(null)
     }, []);
-    const obtenerUbicacionOri = () => {
+
+    const obtenerUbicacionOri = (fromWhsCode) => {
         almacenes.map((item) => {
             if (item.key == fromWhsCode) {
                 if (item.ubicacion == null) {
@@ -49,11 +50,10 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                     setUbicacionOri(arrayUbicacion)
                 }
             }
-
         })
     }
 
-    const obtenerUbicacionDes = () => {
+    const obtenerUbicacionDes = (toWhsCode) => {
         almacenes.map((item) => {
             if (item.key == toWhsCode) {
                 if (item.ubicacion == null) {
@@ -65,14 +65,13 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                     setUbicacionDes(arrayUbicacion)
                 }
             }
-
         })
     }
 
-    const ubicacionDestino = () => {
+    const ubicacionDestino = (fromWhsCode, toWhsCode) => {
         setIsModalVisible(!isModalVisible);
-        obtenerUbicacionOri();
-        obtenerUbicacionDes();
+        obtenerUbicacionOri(fromWhsCode);
+        obtenerUbicacionDes(toWhsCode);
     };
 
     const transferirItem = () => {
@@ -109,10 +108,11 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
             .then((response) => {
                 setIsLoading(false);
                 Alert.alert('Info', '¡Transferencia realizada con exito!', [
-                    { text: 'OK', onPress: () => { getItemsTraslados(docEntry); FiltrarItemsTraslados(docEntry, barcodeItemTraslados); setIsModalVisible(!isModalVisible); } },
+                    { text: 'OK', onPress: () => { getItemsTraslados(docEntry); setIsModalVisible(!isModalVisible); } },
                 ]);
             })
             .catch(error => {
+                setIsLoading(false);
                 if (error.response) {
                     console.log(error.response.status);
                 }
@@ -126,14 +126,10 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
 
     }
 
-    const cargarSeriesLotes = () => {
-        setIsModalSeriesLotes(!isModalSeriesLotes);
-    };
-
     const handleSubmit = () => {
-        console.log('enter...')
         //setIsLoading(true)
         splitCadenaEscaner(barcodeItemTraslados, route.params.docEntry, 'EnterSolicitudTransferencia')
+        setItemsTraslados(tablaItemsTraslados)
     }
 
     useEffect(() => {
@@ -165,8 +161,8 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
     };
 
     // Componente de tarjeta reutilizable
-    const Card = ({ item }) => (
-        <View style={styles.card}>
+    const Card = ({ item, btnTitle }) => (
+        <View style={{ ...styles.card, width: windowsWidth > 500 ? 350 : 300 }}>
             <View style={styles.header}>
                 <Text style={styles.title}>{item.itemCode}</Text>
             </View>
@@ -176,7 +172,7 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ flexDirection: 'col' }}>
                         <View style={{ alignItems: 'center' }}>
-                            <Text style={{ fontSize: 28 }}>Almacennn</Text>
+                            <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Almacen</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
                             <Text style={styles.content}>{item.fromWhsCode}</Text>
@@ -193,7 +189,7 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                     </View>
                     <View style={{ flexDirection: 'col' }}>
                         <View style={{ alignItems: 'center' }}>
-                            <Text style={{ fontSize: 28 }}>Ubicacion</Text>
+                            <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Ubicacion</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
                             <Text style={styles.content}>{item.fromBinEntry}</Text>
@@ -224,48 +220,58 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                 <View style={{ margin: 20 }}>
                     {item.gestionItem == 'I' ?
                         <Button
-                            buttonStyle={{ backgroundColor: '#3b5958', width: '70%' }}
+                            buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
                             titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                             containerStyle={{ alignItems: 'center' }}
-                            onPress={() => { ubicacionDestino(), setItemTrasladoSeleccionado(item) }}
+                            onPress={() => { ubicacionDestino(item.fromWhsCode, item.toWhsCode) }}
                             icon={
                                 <Icon
                                     name="exchange"
                                     type='font-awesome'
                                     size={25}
-                                    color="white"
+                                    color="#fff"
                                     iconStyle={{ paddingHorizontal: 10 }}
                                 />
                             }
-                            title="Transferir Articulo"
+                            title={btnTitle}
                         /> : item.gestionItem == 'S' ?
                             <Button
-                                buttonStyle={{ backgroundColor: '#3b5958', width: '70%' }}
+                                buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
                                 titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                                 containerStyle={{ alignItems: 'center' }}
-                                onPress={() => navigation.navigate('TransferenciaSerieLote', 'sinEscaner')}
+                                onPress={() => {
+                                    navigation.navigate('ListadoSeriesLotes', item)
+                                    setIsModalSeriesLotes(!isModalSeriesLotes);
+                                    cargarSeriesLotesDisp(item)
+                                  
+                                }}
                                 icon={
                                     <Icon
                                         name="eye"
                                         type='font-awesome'
                                         size={windowsWidth > 500 ? 25 : 18}
-                                        color="white"
+                                        color="#fff"
                                         iconStyle={{ paddingHorizontal: 10 }}
                                     />
                                 }
                                 title="Ver Series"
                             /> :
                             <Button
-                                buttonStyle={{ backgroundColor: '#3b5958', width: '70%' }}
+                                buttonStyle={{ backgroundColor: '#3b5958', width: '80%' }}
                                 titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                                 containerStyle={{ alignItems: 'center' }}
-                                onPress={() => navigation.navigate('TransferenciaSerieLote', 'sinEscaner')}
+                                onPress={() => {
+                                    navigation.navigate('ListadoSeriesLotes', item)
+                                    setIsModalSeriesLotes(!isModalSeriesLotes);
+                                    cargarSeriesLotesDisp(item)
+                                  
+                                }}
                                 icon={
                                     <Icon
                                         name="eye"
                                         type='font-awesome'
                                         size={windowsWidth > 500 ? 25 : 18}
-                                        color="white"
+                                        color="#fff"
                                         iconStyle={{ paddingHorizontal: 10 }}
                                     />
                                 }
@@ -284,17 +290,15 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
             <Spinner visible={isLoading} size={60} color='#ffff' />
             <SearchBar
                 platform="default"
-                leftIconContainerStyle={{}}
-                rightIconContainerStyle={{}}
-                loadingProps={{}}
-                onChangeText={(text) => { searchFilterItemsTraslados(text) }}
+                onChangeText={(text) => { searchFilterItemsTraslados(text); text == '' ? setBarcodeItemTraslados(null) : setBarcodeItemTraslados(text.toLocaleUpperCase()) }}
                 onClearText={(text) => searchFilterItemsTraslados(text)}
                 placeholder="Buscar aqui..."
                 placeholderTextColor="#888"
                 cancelButtonTitle="Cancel"
                 cancelButtonProps={{}}
                 onCancel={() => console.log('cancelando...')}
-                value={searchItemsTraslados}
+                value={barcodeItemTraslados}
+                onSubmitEditing={handleSubmit}
                 inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, }}
                 containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
                 theme
@@ -302,16 +306,19 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
             <FlatList
                 data={itemsTraslados}
                 renderItem={({ item }) =>
-                    <Card item={item} />}
+                    <Card item={item} btnTitle={'Seleccionar Articulo'} />}
                 keyExtractor={(item, index) => index.toString()}
-                numColumns={2}
+                numColumns={windowsWidth > 500 ? 2 : 1}
                 contentContainerStyle={styles.flatListContent}
             />
 
             <Modal isVisible={isModalVisible} style={{}} animationInTiming={1000}>
-                <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 30, alignItems: 'center' }}>
+                <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15, height: '100%' }}>
                     <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar ubicacion y cantidad</Text>
-                    <Card item={itemTrasladoSeleccionado} />
+                    <View style={{ alignItems: 'center' }}>
+                        <Card item={itemTraslado} btnTitle={'Transferir Articulo'} />
+                    </View>
+
                     <View style={windowsWidth > 500 ? { flexDirection: 'row', margin: 30, columnGap: 30 } : { flexDirection: 'col' }}>
                         <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
                             <SelectList
@@ -389,7 +396,7 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
 
                     <View style={{ width: '50%', rowGap: 20, alignSelf: 'center', marginTop: 30 }}>
                         <Button
-                            title="Confirmar y transferir"
+                            title="Confirmar y enviar"
                             onPress={() => {
                                 let suma = cantidad + countQty;
                                 setEnableButton(true)
@@ -406,89 +413,21 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                         />
                         <Button
                             title="Cancelar"
-                            onPress={() => {setIsModalVisible(!isModalVisible); setItemTrasladoSeleccionado([])}}
+                            onPress={() => { setIsModalVisible(!isModalVisible); setItemTrasladoSeleccionado([]) }}
                             buttonStyle={{ backgroundColor: '#F80000' }}
                             disabled={enableButton}
                         />
                     </View>
-
-                </View>
-            </Modal>
-
-            <Modal isVisible={isModalSeriesLotes} style={{ flex: 1 }} animationInTiming={1000}>
-                <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 10 }}>
-                    <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Capturar Series/Lotes</Text>
-                    <View style={{ margin: 50 }}>
-                        <Input
-                            leftIcon={
-                                <Icon
-                                    name='barcode'
-                                    size={40}
-                                    type='font-awesome'
-                                    containerStyle={{ paddingHorizontal: 10 }}
-                                    onPress={() => { navigation.navigate('Scanner', route.params.docEntry); setModuloScan(4) }} />}
-                            rightIcon={
-                                <Icon
-                                    name='search'
-                                    size={30}
-                                    type='font-awesome'
-                                    containerStyle={{ paddingHorizontal: 10 }}
-                                    onPress={() => { setIsLoading(true); FiltrarItemsTraslados(route.params.docEntry, barcodeItemTraslados) }} />}
-                            placeholder='Escanea o ingresa el Codigo'
-                            value={barcodeItemTraslados}
-                            onChangeText={text => setBarcodeItemTraslados(text.toLocaleUpperCase())}
-                            style={{ margin: 10, fontSize: 20, color: '#000', fontWeight: 'bold' }}
-                        />
-                        <View style={{ flexDirection: 'row', marginTop: 10, width: '100%', justifyContent: 'center' }}>
-                            <Icon
-                                raised
-                                name='remove'
-                                size={18}
-                                iconStyle={{ fontWeight: 'bold' }}
-                                type='material-icons'
-                                onPress={() => {
-                                    if (cantidad <= 0) {
-                                        setCantidad('0')
-                                    } else {
-                                        setCantidad(parseInt(cantidad) - 1)
-                                    }
-                                }} />
-                            <Input
-                                value={cantidad.toString()}
-                                onChangeText={text => {
-                                    const nuevaCadena = text.replace(/[^0-9]/g, '');
-                                    setCantidad(nuevaCadena)
-                                }}
-                                style={{ fontWeight: 'bold', fontSize: 25, textAlign: 'center', borderWidth: 1, borderColor: '#3b5998', borderCurve: 'circular' }}
-                                keyboardType='numeric'
-                                containerStyle={{ flex: .5 }}
-                            />
-                            <Icon
-                                raised
-                                name='add'
-                                size={18}
-                                type='material-icons'
-                                onPress={() => {
-                                    if (cantidad === '' || cantidad < 0) {
-                                        setCantidad('0')
-                                    } else {
-                                        setCantidad(parseInt(cantidad) + 1)
-                                    }
-
-                                }} />
-                        </View>
-                        <Button
-                            title="Confirmar"
-                            onPress={() => setIsModalSeriesLotes(!isModalSeriesLotes)}
-                        />
-                    </View>
-
-                </View>
+                </ScrollView>
             </Modal>
 
             <TouchableOpacity
                 style={styles.floatingButtonPrint}
-                onPress={() => handleFloatingButtonPress('scan')}
+                onPress={() => {
+                    setSerieLoteTransfer(null)
+                    navigation.navigate('Scanner', route.params.docEntry);
+                    setModuloScan(4)
+                }}
             >
                 <Icon name="barcode" size={24} color="#FFF" type='font-awesome' />
             </TouchableOpacity>
@@ -501,9 +440,8 @@ const styles = StyleSheet.create({
         padding: 10
     },
     card: {
-        width: 400,
         height: 'auto',
-        margin: '2.5%', // Ajusta el margen entre las tarjetas
+        margin: '3.5%', // Ajusta el margen entre las tarjetas
         padding: 15,
         borderWidth: 1,
         borderColor: '#ccc',
@@ -547,7 +485,7 @@ const styles = StyleSheet.create({
     },
     content: {
         fontSize: 28,
-        fontWeight: 'bold'
+        color: '#9b9b9b'
     },
     title: {
         color: '#fff',

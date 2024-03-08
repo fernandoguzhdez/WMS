@@ -16,7 +16,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
         ComprobarSerieLoteTransfer, itemTraslado, setSerieLoteTransfer, serieLoteTransfer, almacenes, isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer,
         selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, selectedUbicacionDes, setSelectedUbicacionDes,
         tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes,
-        splitCadenaEscaner, idCodeSL } = useContext(AuthContext);
+        splitCadenaEscaner, idCodeSL, getItemsTraslados } = useContext(AuthContext);
     const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
     const [cantidad, setCantidad] = useState('0');
     const windowsWidth = useWindowDimensions().width;
@@ -38,16 +38,36 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
     }, [itemsPerPage]);
 
     useEffect(() => {
-        if (docEntry) {
+        
+        if (docEntry && route.params != 'verEnviados') {
             cargarTablaSeriesLotesTransfer();
             if (route.params != 'sinEscaner') {
                 ubicacionOrigen(gestionItem, itemCode, fromWhsCode, toWhsCode)
+            } else {
+                console.log('obtener ubicacion destino...')
+                obtenerUbicacionDes();
             }
         } else {
             console.log('no se logroooo')
+            cargarTablaSeriesLotesTransfer()
         }
 
     }, [itemTraslado])
+
+    const obtenerUbicacionDes = () => {
+        almacenes.map((item) => {
+            if (item.key == toWhsCode) {
+                if (item.ubicacion == null) {
+                    setUbicacionDes([])
+                } else {
+                    let arrayUbicacion = item.ubicacion.map((item) => {
+                        return { key: item.absEntry, value: item.sL1Code }
+                    })
+                    setUbicacionDes(arrayUbicacion)
+                }
+            }
+        })
+    }
 
     const comprobarUbicacionOrigen = (metodo) => {
         switch (metodo) {
@@ -55,7 +75,6 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                 navigation.navigate('Scanner');
                 setModuloScan(5)
                 break;
-
             case 'sinEscaner':
                 if (serieLoteTransfer == null) {
                     Alert.alert('Info', '¡No puede quedar el campo vacio!', [
@@ -66,7 +85,6 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                     console.log('a ver que hay aqui', gestionItem + itemCode + fromWhsCode + toWhsCode)
                 }
                 break;
-
             default:
                 break;
         }
@@ -91,7 +109,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
     const eliminarSerieLoteTransfer = (id) => {
         setIsLoading(true)
         const newArray = tablaSeriesLotesTransfer.filter((elemento, index) => index !== id);
-        
+
         // Set headers
         const headers = {
             'Content-Type': 'application/json',
@@ -125,8 +143,8 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                 Alert.alert('Info', '¡Elemento Eliminado!', [
                     {
                         text: 'OK', onPress: () => {
-                            setIsLoading(true)
                             cargarTablaSeriesLotesTransfer()
+                            getItemsTraslados(docEntry)
                         }
                     },
                 ]);
@@ -198,7 +216,20 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                                             size={windowsWidth > 500 ? 35 : 20}
                                             type='font-awesome'
                                             containerStyle={{ paddingHorizontal: 5 }}
-                                            onPress={() => { eliminarSerieLoteTransfer(index) }} />
+                                            onPress={() => {
+                                                Alert.alert('Advertencia', '¿Estas seguro de eliminar el elemento seleccionado?', [
+                                                    {
+                                                        text: 'Cancelar',
+                                                        onPress: () => console.log('Cancel Pressed'),
+                                                        style: 'cancel',
+                                                    },
+                                                    {
+                                                        text: 'Eliminar', onPress: () => {
+                                                            eliminarSerieLoteTransfer(index)
+                                                        }
+                                                    },
+                                                ]);
+                                            }} />
                                     </DataTable.Cell>
                                 </DataTable.Row>
                             ))}
