@@ -8,11 +8,13 @@ import Modal from "react-native-modal";
 import { SelectList } from 'react-native-dropdown-select-list'
 import Spinner from 'react-native-loading-spinner-overlay';
 
-export const ListadoItemsTransfer = ({ navigation, route }) => {
+export function ListadoItemsTransfer({ navigation, route }) {
 
-    const { url, tokenInfo, setModuloScan, setIsLoading, isLoading, FiltrarItemsTraslados, barcodeItemTraslados, setBarcodeItemTraslados, setItemsTraslados, itemsTraslados, setItemTraslado,
+    const { url, tokenInfo, setModuloScan, setIsLoading, isLoading, barcodeItemTraslados, setBarcodeItemTraslados, setItemsTraslados, itemsTraslados, setItemTraslado,
         itemTraslado, getAlmacenes, almacenes, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ubicacionOrigen, splitCadenaEscaner, idCodeSL, setIdCodeSL, ComprobarSerieLoteTransfer,
-        tablaItemsTraslados, cargarSeriesLotesDisp } = useContext(AuthContext);
+        tablaItemsTraslados, cargarSeriesLotesDisp, setFilterListaSeriesLotes, dataSerieLoteTransfer, isModalSerieLote, setIsModalSerieLote, ubicacionDesOri,
+        isEnter } = useContext(AuthContext);
+
     const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
     const [cantidad, setCantidad] = useState('1');
     const windowsWidth = useWindowDimensions().width;
@@ -31,12 +33,23 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
 
 
     useEffect(() => {
+        limpiarVariables()
         getAlmacenes()
+        setItemsTraslados([])
         getItemsTraslados(route.params.docEntry)
         setItemTraslado([])
-        setIdCodeSL([])
         setBarcodeItemTraslados(null)
     }, []);
+
+    const limpiarVariables = () => {
+        const unsubscribe = navigation.addListener('beforeRemove', () => {
+            setItemsTraslados([])
+            setItemTraslado([])
+            setBarcodeItemTraslados(null)
+        });
+
+        return unsubscribe;
+    }
 
     const obtenerUbicacionOri = (fromWhsCode) => {
         almacenes.map((item) => {
@@ -129,17 +142,27 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
     const handleSubmit = () => {
         //setIsLoading(true)
         splitCadenaEscaner(barcodeItemTraslados, route.params.docEntry, 'EnterSolicitudTransferencia')
+        //Se vuelve a llenar la tabla ya que al usar el enter deja en blanco la ventana
         setItemsTraslados(tablaItemsTraslados)
     }
 
-    useEffect(() => {
-        if (idCodeSL.length > 4) {
-            console.log('partes...', idCodeSL)
-            navigation.navigate('TransferenciaSerieLote', 'sinEscaner')
-            ComprobarSerieLoteTransfer(idCodeSL[4], idCodeSL[0], idCodeSL[2], idCodeSL[3], idCodeSL[1], 'Enter')
-        }
+    /*  useEffect(() => {
+         if (idCodeSL.length > 4) {
+             console.log('partes...', idCodeSL)
+             navigation.navigate('TransferenciaSerieLote', 'sinEscaner')
+             ComprobarSerieLoteTransfer(idCodeSL[4], idCodeSL[0], idCodeSL[2], idCodeSL[3], idCodeSL[1], 'Enter')
+         }
+ 
+     }, [idCodeSL]) */
 
-    }, [idCodeSL])
+    useEffect(() => {
+        if (isEnter == true) {
+            navigation.navigate('ListadoSeriesLotes')
+            console.log('ubicaciones desde listado....', fromWhsCode, toWhsCode)
+            ubicacionDesOri(fromWhsCode, toWhsCode)
+            console.log('almacenes', almacenes)
+        }
+    }, [isEnter])
 
     const searchFilterItemsTraslados = (text) => {
         // Check if searched text is not blank
@@ -216,74 +239,74 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                     </View>
                 </View>
             </View>
-            {itemTrasladoSeleccionado.length != undefined ?
-                <View style={{ margin: 20 }}>
-                    {item.gestionItem == 'I' ?
+            <View style={{ margin: 20 }}>
+                {item.gestionItem == 'I' ?
+                    <Button
+                        buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
+                        titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
+                        containerStyle={{ alignItems: 'center' }}
+                        onPress={() => { ubicacionDestino(item.fromWhsCode, item.toWhsCode), setItemTraslado(item) }}
+                        icon={
+                            <Icon
+                                name="exchange"
+                                type='font-awesome'
+                                size={25}
+                                color="#fff"
+                                iconStyle={{ paddingHorizontal: 10 }}
+                            />
+                        }
+                        title={btnTitle}
+                    /> : item.gestionItem == 'S' ?
                         <Button
                             buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
                             titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                             containerStyle={{ alignItems: 'center' }}
-                            onPress={() => { ubicacionDestino(item.fromWhsCode, item.toWhsCode) }}
+                            onPress={() => {
+                                navigation.navigate('ListadoSeriesLotes', item)
+                                //setIsModalSeriesLotes(!isModalSeriesLotes);
+                                cargarSeriesLotesDisp(item)
+                                //setItemsTraslados([])
+                                setFilterListaSeriesLotes([])
+                                setItemTraslado(item)
+                            }}
                             icon={
                                 <Icon
-                                    name="exchange"
+                                    name="eye"
                                     type='font-awesome'
-                                    size={25}
+                                    size={windowsWidth > 500 ? 25 : 18}
                                     color="#fff"
                                     iconStyle={{ paddingHorizontal: 10 }}
                                 />
                             }
-                            title={btnTitle}
-                        /> : item.gestionItem == 'S' ?
-                            <Button
-                                buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
-                                titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
-                                containerStyle={{ alignItems: 'center' }}
-                                onPress={() => {
-                                    navigation.navigate('ListadoSeriesLotes', item)
-                                    setIsModalSeriesLotes(!isModalSeriesLotes);
-                                    cargarSeriesLotesDisp(item)
-                                  
-                                }}
-                                icon={
-                                    <Icon
-                                        name="eye"
-                                        type='font-awesome'
-                                        size={windowsWidth > 500 ? 25 : 18}
-                                        color="#fff"
-                                        iconStyle={{ paddingHorizontal: 10 }}
-                                    />
-                                }
-                                title="Ver Series"
-                            /> :
-                            <Button
-                                buttonStyle={{ backgroundColor: '#3b5958', width: '80%' }}
-                                titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
-                                containerStyle={{ alignItems: 'center' }}
-                                onPress={() => {
-                                    navigation.navigate('ListadoSeriesLotes', item)
-                                    setIsModalSeriesLotes(!isModalSeriesLotes);
-                                    cargarSeriesLotesDisp(item)
-                                  
-                                }}
-                                icon={
-                                    <Icon
-                                        name="eye"
-                                        type='font-awesome'
-                                        size={windowsWidth > 500 ? 25 : 18}
-                                        color="#fff"
-                                        iconStyle={{ paddingHorizontal: 10 }}
-                                    />
-                                }
-                                title="Ver Lotes"
-                            />
-                    }
-                </View> : ''
-            }
+                            title="Ver Series"
+                        /> :
+                        <Button
+                            buttonStyle={{ backgroundColor: '#3b5958', width: '80%' }}
+                            titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
+                            containerStyle={{ alignItems: 'center' }}
+                            onPress={() => {
+                                navigation.navigate('ListadoSeriesLotes', item)
+                                //setIsModalSeriesLotes(!isModalSeriesLotes);
+                                cargarSeriesLotesDisp(item)
+                                setItemTraslado(item)
+                                //setItemsTraslados([])
+                                setFilterListaSeriesLotes([])
+                            }}
+                            icon={
+                                <Icon
+                                    name="eye"
+                                    type='font-awesome'
+                                    size={windowsWidth > 500 ? 25 : 18}
+                                    color="#fff"
+                                    iconStyle={{ paddingHorizontal: 10 }}
+                                />
+                            }
+                            title="Ver Lotes"
+                        />
+                }
+            </View>
         </View>
     );
-
-
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff', height: 'auto', overflow: 'hidden' }}>
@@ -312,11 +335,13 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                 contentContainerStyle={styles.flatListContent}
             />
 
-            <Modal isVisible={isModalVisible} style={{}} animationInTiming={1000}>
-                <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15, height: '100%' }}>
+            <Modal isVisible={isModalVisible} style={{}} animationInTiming={1000} >
+                <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15 }}>
                     <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar ubicacion y cantidad</Text>
                     <View style={{ alignItems: 'center' }}>
-                        <Card item={itemTraslado} btnTitle={'Transferir Articulo'} />
+                        <Text style={styles.content}>
+                            {itemTraslado.itemCode}
+                        </Text>
                     </View>
 
                     <View style={windowsWidth > 500 ? { flexDirection: 'row', margin: 30, columnGap: 30 } : { flexDirection: 'col' }}>
@@ -404,6 +429,7 @@ export const ListadoItemsTransfer = ({ navigation, route }) => {
                                     transferirItem();
                                     setEnableButton(false)
                                 } else {
+                                    console.log('Suma...', cantidad + ' : ' + countQty)
                                     Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de articulos a transferir!', [
                                         { text: 'OK', onPress: () => setEnableButton(false) },
                                     ]);

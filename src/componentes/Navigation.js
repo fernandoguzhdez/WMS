@@ -88,7 +88,7 @@ export function Navigation() {
                                         onPress={() => setActivarBuscadorArticulos(!activarBuscadorArticulos)}
                                     /> : <View></View>
                     })} />
-                <Stack.Screen name="ItemsTransferencia" component={ItemsTransferencia} options={{ headerShown: true, title: 'Solicitud de transferencia', }} />
+                <Stack.Screen name="ItemsTransferencia" component={ItemsTransferencia} options={{ headerShown: true, title: 'Items Transferencia', }} />
                 <Stack.Screen name="ListadoItemsTransfer" component={ListadoItemsTransfer} options={{ headerShown: true, title: 'Articulo transferencia', }} />
                 <Stack.Screen name="ListadoSeriesLotes" component={ListadoSeriesLotes} options={{ headerShown: true, title: 'Listado Series/Lotes', }} />
                 <Stack.Screen name="TransferenciaSerieLote" component={TransferenciaSerieLote} options={{ headerShown: true, title: 'Captura de serie y lotes', }} />

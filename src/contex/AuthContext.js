@@ -80,6 +80,8 @@ export const AuthProvider = ({ children }) => {
     const [idCodeSL, setIdCodeSL] = useState([]);
     const [listaSeriesLotes, setListaSeriesLotes] = useState([])
     const [filterListaSeriesLotes, setFilterListaSeriesLotes] = useState([])
+    const [isModalSerieLote, setIsModalSerieLote] = useState(false);
+    const [isEnter, setIsEnter] = useState(false)
     let partes = [];
     //VARIABLES PARA EL MODULO DE ETIQUETAS MASTER DETAILS
     const [masterDetails, setMasterDetails] = useState([]);
@@ -104,21 +106,25 @@ export const AuthProvider = ({ children }) => {
         const idCodeSerieLote = partes[1];
         const almacen = partes[2];
         const ubicacion = partes[3];
-        /* const gestionArticulo = idCodeSerieLote[0];
-        partes.push(gestionArticulo) */
 
         switch (modulo) {
             case 'EnterSolicitudTransferencia':
-                FiltrarItemsTraslados(dato2, codigoArticulo)
-                console.log('en el switch...', dato2 + ' : ' + codigoArticulo)
+                let filtradoArticulo = FiltrarArticulosTraslado(codigoArticulo, almacen, ubicacion)
+                if (filtradoArticulo == 0) {
+                    console.log('no se encontro')
+                } else {
+                    cargarSeriesLotesDisp(filtradoArticulo[0], idCodeSerieLote, 'escaner')
+                    setItemTraslado(filtradoArticulo[0])
+                }
+
                 //setIdCodeSL(partes)
                 break;
             case 'EscanerSolicitudTransferencia':
-                FiltrarItemsTraslados(dato2, codigoArticulo)
+                FiltrarArticulosTraslado(dato2, codigoArticulo)
                 //setIdCodeSL(partes)
                 break;
             case 'EnterSolicitudTransferenciaSeriesLotes':
-                FiltrarItemsTraslados(dato2, codigoArticulo)
+                FiltrarArticulosTraslado(dato2, codigoArticulo)
                 //setIdCodeSL(partes)
                 console.log('idCode', partes)
                 break;
@@ -877,16 +883,69 @@ export const AuthProvider = ({ children }) => {
         // Make GET request
         axios.get(`${url}/api/SolTransferStock/Get_Details?IdDocumentCnt=${docEntry}`, { headers })
             .then(response => {
+                setIsLoading(false)
                 setItemsTraslados(response.data.owtr[0].items)
                 setTablaItemsTraslados(response.data.owtr[0].items)
             })
             .catch(error => {
                 console.error('Error al obtener los articulos de transferencia', error);
+                setIsLoading(false)
             });
     }
 
+    function FiltrarArticulosTraslado(itemCode, fromWhsCode, fromBinEntry) {
+        return tablaItemsTraslados.filter(function (elemento) {
+            return elemento.itemCode == itemCode &&
+                elemento.fromWhsCode == fromWhsCode &&
+                elemento.fromBinEntry == fromBinEntry;
+        });
+    }
 
-    const FiltrarItemsTraslados = async (docEntry, barcodeItemTraslados) => {
+    function FiltrarSerieLoteTraslado(data, idCode) {
+        return data.filter(function (elemento) {
+            return elemento.idCode.toUpperCase() == idCode.toUpperCase()
+        });
+    }
+
+    const obtenerUbicacionOri = (fromWhsCode) => {
+        almacenes.map((item) => {
+            if (item.key == fromWhsCode) {
+                if (item.ubicacion == null) {
+                    setUbicacionOri([])
+                } else {
+                    let arrayUbicacion = item.ubicacion.map((item) => {
+                        return { key: item.absEntry, value: item.sL1Code }
+                    })
+                    setUbicacionOri(arrayUbicacion)
+                }
+            }
+        })
+    }
+
+    const obtenerUbicacionDes = (toWhsCode) => {
+        almacenes.map((item) => {
+            if (item.key == toWhsCode) {
+                if (item.ubicacion == null) {
+                    setUbicacionDes([])
+                } else {
+                    let arrayUbicacion = item.ubicacion.map((item) => {
+                        return { key: item.absEntry, value: item.sL1Code }
+                    })
+                    setUbicacionDes(arrayUbicacion)
+                }
+            }
+        })
+    }
+
+    const ubicacionDesOri = (fromWhsCode, toWhsCode) => {
+        console.log('mandando a llamar al modal', fromWhsCode, toWhsCode)
+        setIsModalSerieLote(!isModalSerieLote);
+        obtenerUbicacionOri(fromWhsCode);
+        obtenerUbicacionDes(toWhsCode);
+    };
+
+
+    /* const FiltrarArticulosTraslado = async (docEntry, barcodeItemTraslados) => {
         setItemTraslado([]);
         setIsLoading(true);
 
@@ -914,7 +973,36 @@ export const AuthProvider = ({ children }) => {
             .catch(error => {
                 console.error('Error', error);
             });
-    }
+    } */
+
+    const cargarSeriesLotesDisp = async (item, idCode, accion) => {
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        await axios.get(`${url}/api/SolTransferStock/Get_Disp_SerAndBatchs?ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}&WhsCode=${item.fromWhsCode}`, { headers })
+            .then(response => {
+                setListaSeriesLotes(response.data.serialxManbach)
+                setFilterListaSeriesLotes(response.data.serialxManbach)
+
+                if (accion == 'escaner') {
+                    setIsEnter(true)
+                    let filtradoSerieLote = FiltrarSerieLoteTraslado(response.data.serialxManbach, idCode)
+                    console.log('Aqui tienes tu idCode', filtradoSerieLote[0])
+                    if (filtradoSerieLote.length == 0) {
+                        console.log('no se encontre el lote')
+                    } else {
+                        setDataSerieLoteTransfer(filtradoSerieLote[0])
+                    }
+
+                }
+            })
+            .catch(error => {
+                console.error('Error al traer los lotes', error);
+            });
+    };
 
     const ComprobarSerieLoteTransfer = (gestionItem, itemCode, fromWhsCode, ubicacion, serieLoteT, accion) => {
         console.log('Comprobando serie lote tranfer...', gestionItem + ' : ' + itemCode + ' : ' + fromWhsCode + ' : ' + ubicacion + ' : ' + serieLoteT)
@@ -924,7 +1012,7 @@ export const AuthProvider = ({ children }) => {
             'Authorization': `Bearer ${tokenInfo.token}`
         };
         // Make GET request
-        axios.post(`${url}/api/Inventory/Get_Batchs_and_Serials`, {
+        axios.get(`${url}/api/Inventory/Get_Batchs_and_Serials`, {
             "GestionItem": gestionItem,
             "ItemCode": itemCode,
             "WhsCode": fromWhsCode,
@@ -952,7 +1040,7 @@ export const AuthProvider = ({ children }) => {
         console.log('Datos del lote seleccionado', dataSerieLoteTransfer)
         console.log('Ubicacion de origen seleccionada', selectedUbicacionOri)
         console.log('Ubicacion de destino seleccionada', selectedUbicacionDes)
-        
+
 
         let arrayPendiente = [
             {
@@ -964,7 +1052,7 @@ export const AuthProvider = ({ children }) => {
                 "sysNumber": dataSerieLoteTransfer.sysNumber,
                 "quantityCounted": cantidad,
                 "fromWhsCode": dataSerieLoteTransfer.whsCode,
-                "fromBinEntry": selectedUbicacionOri || 0 ,
+                "fromBinEntry": selectedUbicacionOri || 0,
                 "fromBinCode": "",
                 "toWhsCode": toWhsCode,
                 "toBinEntry": selectedUbicacionDes,
@@ -1040,27 +1128,9 @@ export const AuthProvider = ({ children }) => {
                 }
             })
             .catch(error => {
-                console.error('error al cargar tabla..', error);
+                console.error('error al cargar tabla..', itemTraslado);
             });
     }
-
-    const cargarSeriesLotesDisp = async (item) => {
-        console.log(item)
-        // Set headers
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${tokenInfo.token}`
-        };
-        // Make GET request
-        await axios.get(`${url}/api/SolTransferStock/Get_Disp_SerAndBatchs?ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}&WhsCode=${item.fromWhsCode}`, { headers })
-            .then(response => {
-                setListaSeriesLotes(response.data.serialxManbach)
-                setFilterListaSeriesLotes(response.data.serialxManbach)
-            })
-            .catch(error => {
-                console.error(error);
-            });
-    };
 
     const ubicacionOrigen = (gestionItem, itemCode, fromWhsCode, toWhsCode) => {
 
@@ -1272,10 +1342,10 @@ export const AuthProvider = ({ children }) => {
                 setIndexTab, indexTab,
                 filtrarSerie, serialsLotes, setSerialsLotes, contadorSerie, setArraySeries, verificarEscaneoSerie, textSerie, setTextSerie, moduloScan, setModuloScan, lote, setLote, verificarLote, guardarConteoLote,
                 setIsLoadingItems, isLoadingItems, isLoadingCerrarConteo, setIsLoadingCerrarConteo, lotes, setLotes, cantidadSerieLote, setCantidadSerieLote, contadorClic, setContadorClic,
-                FiltrarItemsTraslados, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes,
-                isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, cargarSeriesLotesDisp, listaSeriesLotes, setListaSeriesLotes,
-                selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes,
-                masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
+                FiltrarArticulosTraslado, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes,
+                isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, cargarSeriesLotesDisp, listaSeriesLotes, setListaSeriesLotes, isModalSerieLote, setIsModalSerieLote,
+                selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes, ubicacionOri, setUbicacionOri, ubicacionDesOri, isEnter, setIsEnter,
+                ubicacionDes, setUbicacionDes,masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
                 searchDetalleInvSL, setSearchDetalleInvSL, handleSearchDetalleInvSL, searchDetalleInv, setSearchDetalleInv, handleSearchDetalleInv, dataCompleteDI, setDataCompleteDI, fetchDataDetalleInv, splitCadenaEscaner,
                 idCodeSL, setIdCodeSL
             }}

@@ -25,6 +25,10 @@ export function SolicitudTransferencia({ navigation }) {
 
     useEffect(() => {
         getAlmacenes();
+        getDocuments()
+    }, []);
+
+    const getDocuments = () => {
         setIsLoading(true)
         // Set headers
         const headers = {
@@ -42,7 +46,7 @@ export function SolicitudTransferencia({ navigation }) {
                 setIsLoading(false)
                 console.error('No hay solicitudes de transferencia', error);
             });
-    }, []);
+    }
 
     const searchFilterFunctionSolicitudT = (text) => {
         // Check if searched text is not blank
@@ -92,7 +96,12 @@ export function SolicitudTransferencia({ navigation }) {
         return (
             // Flat List Item
             <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry}
-                onPress={() => { navigation.navigate('ListadoItemsTransfer', item); setIdCodeSL([]); setSerieLoteTransfer(null) }} >
+                onPress={() => {
+                    navigation.navigate('ListadoItemsTransfer', item);
+                    setIdCodeSL([]);
+                    setSerieLoteTransfer(null);
+                    setIsLoading(true)
+                }} >
                 <View style={{ backgroundColor: '#3b5998', opacity: item.status == 'C' ? 0.4 : 1, justifyContent: 'space-around', flexDirection: 'row' }}  >
                     <View style={styles.itemTexto}>
                         <Text style={{ ...styles.texto, fontSize: 20 }}>

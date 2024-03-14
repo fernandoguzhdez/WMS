@@ -11,26 +11,26 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
 
     const { url, tokenInfo, isLoading, setSerieLoteTransfer, listaSeriesLotes, ComprobarSerieLoteTransfer, barcodeItemTraslados, setBarcodeItemTraslados,
         filterListaSeriesLotes, setFilterListaSeriesLotes, getAlmacenes, almacenes, getItemsTraslados, setItemTraslado, itemTraslado, ActualizarSerieLoteTransfer,
-         setDataSerieLoteTransfer, dataSerieLoteTransfer, setTablaSeriesLotesTransfer } = useContext(AuthContext);
+        setDataSerieLoteTransfer, dataSerieLoteTransfer, setTablaSeriesLotesTransfer, isModalSerieLote, setIsModalSerieLote, ubicacionOri, setUbicacionOri, ubicacionDesOri,
+        ubicacionDes, setUbicacionDes, selectedUbicacionOri, setSelectedUbicacionOri, selectedUbicacionDes, setSelectedUbicacionDes, setIsEnter, isEnter, cargarTablaSeriesLotesTransfer } = useContext(AuthContext);
+
+    const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
 
     const [cantidad, setCantidad] = useState('1');
     const windowsWidth = useWindowDimensions().width;
-    const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedAlmacenOri, setSelectedAlmacenOri] = useState();
-    const [selectedUbicacionOri, setSelectedUbicacionOri] = useState();
     const [selectedAlmacenDes, setSelectedAlmacenDes] = useState();
-    const [selectedUbicacionDes, setSelectedUbicacionDes] = useState();
-    const [ubicacionOri, setUbicacionOri] = useState();
-    const [ubicacionDes, setUbicacionDes] = useState();
+
+
     const [enableButton, setEnableButton] = useState(false);
 
     useEffect(() => {
     }, [listaSeriesLotes])
 
     useEffect(() => {
-        getAlmacenes()
-        getItemsTraslados(route.params.docEntry)
-        setItemTraslado(route.params)
+        //getAlmacenes()
+        //getItemsTraslados(route.params.docEntry)
+        //setItemTraslado(route.params)
     }, []);
 
     const searchFilterSeriesLotes = (text) => {
@@ -38,7 +38,7 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
         if (text) {
             setFilterListaSeriesLotes(
                 listaSeriesLotes.filter((item) =>
-                    item.IdCode.toUpperCase().includes(text.toUpperCase())
+                    item.idCode.toUpperCase().includes(text.toUpperCase())
                 )
             );
         } else {
@@ -55,41 +55,7 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
         console.log('enter')
     }
 
-    const obtenerUbicacionOri = (fromWhsCode) => {
-        almacenes.map((item) => {
-            if (item.key == fromWhsCode) {
-                if (item.ubicacion == null) {
-                    setUbicacionOri([])
-                } else {
-                    let arrayUbicacion = item.ubicacion.map((item) => {
-                        return { key: item.absEntry, value: item.sL1Code }
-                    })
-                    setUbicacionOri(arrayUbicacion)
-                }
-            }
-        })
-    }
 
-    const obtenerUbicacionDes = (toWhsCode) => {
-        almacenes.map((item) => {
-            if (item.key == toWhsCode) {
-                if (item.ubicacion == null) {
-                    setUbicacionDes([])
-                } else {
-                    let arrayUbicacion = item.ubicacion.map((item) => {
-                        return { key: item.absEntry, value: item.sL1Code }
-                    })
-                    setUbicacionDes(arrayUbicacion)
-                }
-            }
-        })
-    }
-
-    const ubicacionDestino = (fromWhsCode, toWhsCode) => {
-        setIsModalVisible(!isModalVisible);
-        obtenerUbicacionOri(fromWhsCode);
-        obtenerUbicacionDes(toWhsCode);
-    };
 
     // Componente de tarjeta reutilizable
     const CardSeriesLotes = ({ item }) => (
@@ -118,7 +84,7 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                         titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                         containerStyle={{ alignItems: 'center' }}
                         onPress={() => {
-                            ubicacionDestino(route.params.fromWhsCode, route.params.toWhsCode); setDataSerieLoteTransfer(item)
+                            ubicacionDesOri(fromWhsCode, toWhsCode); setDataSerieLoteTransfer(item)
                         }}
                         icon={
                             <Icon
@@ -136,7 +102,7 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                         titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                         containerStyle={{ alignItems: 'center' }}
                         onPress={() => {
-                            ubicacionDestino(route.params.fromWhsCode, route.params.toWhsCode); setDataSerieLoteTransfer(item)
+                            ubicacionDesOri(fromWhsCode, toWhsCode); setDataSerieLoteTransfer(item)
                         }}
                         icon={
                             <Icon
@@ -177,8 +143,9 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                 titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                 containerStyle={{ alignItems: 'flex-end', marginHorizontal: 40 }}
                 onPress={() => {
-                    navigation.navigate('TransferenciaSerieLote', 'verEnviados')
-                    setTablaSeriesLotesTransfer([]);
+                    navigation.navigate('TransferenciaSerieLote')
+                    cargarTablaSeriesLotesTransfer();
+                    //setTablaSeriesLotesTransfer([]);
                 }}
                 icon={
                     <Icon
@@ -200,11 +167,13 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                 contentContainerStyle={styles.flatListContent}
             />
 
-            <Modal isVisible={isModalVisible} style={{}} animationInTiming={1000}>
+            <Modal isVisible={isModalSerieLote} style={{}} animationInTiming={1000}>
                 <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15, height: '100%' }}>
                     <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar ubicacion y cantidad</Text>
                     <View style={{ alignItems: 'center' }}>
-                        <CardSeriesLotes item={dataSerieLoteTransfer} />
+                        <Text style={styles.content}>
+                            {dataSerieLoteTransfer.idCode}
+                        </Text>
                     </View>
 
                     <View style={windowsWidth > 500 ? { flexDirection: 'row', margin: 30, columnGap: 30 } : { flexDirection: 'col' }}>
@@ -289,10 +258,13 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                                 Alert.alert('Advertencia', '¿Estas seguro de continuar con la transferencia?', [,
                                     {
                                         text: 'Si', onPress: () => {
-                                            setIsModalVisible(!isModalVisible);
+                                            setIsModalSerieLote(!isModalSerieLote);
                                             ActualizarSerieLoteTransfer(cantidad);
                                             //setIsLoading(true)
-                                            setCantidad('0')
+                                            setCantidad('1')
+                                            if (isEnter == true) {
+                                                setIsEnter(false)
+                                            }
                                         }
                                     },
                                     {
@@ -306,7 +278,13 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                         />
                         <Button
                             title="Cancelar"
-                            onPress={() => { setIsModalVisible(!isModalVisible); setItemTraslado([]) }}
+                            onPress={() => {
+                                setIsModalSerieLote(!isModalSerieLote);
+                                setItemTraslado([]);
+                                if (isEnter == true) {
+                                    setIsEnter(false)
+                                }
+                            }}
                             buttonStyle={{ backgroundColor: '#F80000' }}
                             disabled={enableButton}
                         />

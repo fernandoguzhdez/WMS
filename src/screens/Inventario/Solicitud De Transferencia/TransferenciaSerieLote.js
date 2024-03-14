@@ -3,8 +3,7 @@ import { AuthContext } from '../../../contex/AuthContext';
 import axios from 'axios';
 import { View, StyleSheet, Text, ScrollView, Alert, useWindowDimensions } from 'react-native';
 import { Input, Card, lightColors, Chip } from '@rneui/themed';
-import { Button } from 'react-native-elements'
-import { Icon } from 'react-native-elements'
+import { Icon, SearchBar, Button } from 'react-native-elements'
 import Modal from "react-native-modal";
 import { SelectList } from 'react-native-dropdown-select-list'
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -37,7 +36,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
         setSerieLoteTransfer(null)
     }, [itemsPerPage]);
 
-    useEffect(() => {
+    /* useEffect(() => {
         
         if (docEntry && route.params != 'verEnviados') {
             cargarTablaSeriesLotesTransfer();
@@ -52,7 +51,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
             cargarTablaSeriesLotesTransfer()
         }
 
-    }, [itemTraslado])
+    }, [itemTraslado]) */
 
     const obtenerUbicacionDes = () => {
         almacenes.map((item) => {
@@ -159,7 +158,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
         <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 10 }}>
             <Spinner visible={isLoading} size={60} color='#ffff' />
             <View style={{ margin: windowsWidth > 500 ? 20 : 0 }}>
-                <Input
+                {/* <Input
                     leftIcon={
                         <Icon
                             name='barcode'
@@ -190,6 +189,21 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                     onClear={(text) => setSerieLoteTransfer(null)}
                     style={{ margin: 0, fontSize: windowsWidth > 500 ? 22 : 16, color: '#000', fontWeight: 'bold' }}
                     containerStyle={{ padding: 10 }}
+                /> */}
+                <SearchBar
+                    platform="default"
+                    onChangeText={(text) => { console.log(text) }}
+                    onClearText={(text) => {console.log(text)}}
+                    placeholder="Buscar aqui..."
+                    placeholderTextColor="#888"
+                    cancelButtonTitle="Cancel"
+                    cancelButtonProps={{}}
+                    onCancel={() => console.log('cancelando...')}
+                    //value={barcodeItemTraslados}
+                    //onSubmitEditing={handleSubmit}
+                    inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, }}
+                    containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
+                    theme
                 />
                 <View style={{ flexDirection: 'row', height: 'auto', flexWrap: 'wrap' }}>
                     <ScrollView>
