@@ -93,7 +93,11 @@ export function SeriesLotes() {
                                     <Input
                                         value={cantidadSerieLote.toString()}
                                         onChangeText={text => {
-                                            const nuevaCadena = text.replace(/[^0-9]/g, '');
+                                            const nuevaCadena = text.replace(/[^0-9.]/g, '');
+                                            // Verificar si hay más de un punto decimal
+                                            if ((nuevaCadena.match(/\./g) || []).length > 1) {
+                                                return;
+                                            }
                                             setCantidadSerieLote(nuevaCadena)
                                         }}
                                         style={{ fontWeight: 'bold', fontSize: 25 }}

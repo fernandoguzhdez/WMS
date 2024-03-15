@@ -45,7 +45,7 @@ export const DetalleInventarioSL = ({ navigation, route }) => {
             } else {
                 handleSearchDetalleInvSL(searchDetalleInvSL, 'conScan')
             }
-            
+
         }
     }, [dataComplete])
 
@@ -60,9 +60,9 @@ export const DetalleInventarioSL = ({ navigation, route }) => {
         return data.slice(startIndex, endIndex);
     };
 
-    useEffect(()=> {
+    useEffect(() => {
         console.log(searchDetalleInvSL)
-    },[dataComplete])
+    }, [dataComplete])
 
     /* useEffect(() => {
         
@@ -164,7 +164,7 @@ export const DetalleInventarioSL = ({ navigation, route }) => {
             <List.Accordion
                 style={{ flex: 1, minWidth: '100%', backgroundColor: '#ffffff' }}
                 titleStyle={{ fontSize: windowsWidth > 500 ? 26 : 20, fontWeight: '600', color: '#000000' }}
-                title={'Almacen - ' + item.WhsCode + ' - ' +item.IdCode}
+                title={'Almacen - ' + item.WhsCode + ' - ' + item.IdCode}
                 left={props => <List.Icon {...props} icon="folder" color='#828282' />}
                 onPress={handlePress}>
                 <View style={{ marginVertical: 10 }}>
@@ -186,7 +186,7 @@ export const DetalleInventarioSL = ({ navigation, route }) => {
                 onChangeText={(text) => handleSearchDetalleInvSL(text)}
                 onClear={(text) => handleSearchDetalleInvSL('')}
                 placeholder="Buscar..."
-                style={{color: '#000000', fontSize: windowsWidth > 500 ? 26 : 20}}
+                style={{ color: '#000000', fontSize: windowsWidth > 500 ? 26 : 20 }}
                 value={searchDetalleInvSL}
                 inputStyle={{ backgroundColor: '#ffffff', borderRadius: 10 }}
                 containerStyle={{ backgroundColor: '#ffffff', borderRadius: 50, margin: 20, padding: 0, borderColor: '#ffffff' }}
@@ -343,7 +343,11 @@ export const DetalleInventarioSL = ({ navigation, route }) => {
                             <Input
                                 value={cantidad.toString()}
                                 onChangeText={text => {
-                                    const nuevaCadena = text.replace(/[^0-9]/g, '');
+                                    const nuevaCadena = text.replace(/[^0-9.]/g, '');
+                                    // Verificar si hay más de un punto decimal
+                                    if ((nuevaCadena.match(/\./g) || []).length > 1) {
+                                        return;
+                                    }
                                     setCantidad(nuevaCadena)
                                 }}
                                 style={{ fontWeight: 'bold', fontSize: 25 }}

@@ -375,7 +375,7 @@ export const ItemsTransferencia = ({ navigation, route }) => {
                                 value={cantidad.toString()}
                                 onChangeText={text => {
                                     const nuevaCadena = text.replace(/[^0-9]/g, '');
-                                    setCantidad(nuevaCadena)
+                                    setCantidad(text)
                                 }}
                                 style={{ fontWeight: 'bold', fontSize: 25, textAlign: 'center', borderWidth: 1, borderColor: '#3b5998', borderCurve: 'circular' }}
                                 keyboardType='numeric'

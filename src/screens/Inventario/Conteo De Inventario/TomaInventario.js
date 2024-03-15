@@ -181,7 +181,7 @@ export function TomaInventario(props) {
             <Input
               value={cantidad.toString()}
               onChangeText={text => {
-                const nuevaCadena = text.replace(/[^0-9]/g, '');
+                const nuevaCadena = text.replace(/[^0-9.]/g, '');
                 setCantidad(nuevaCadena)
               }}
               style={{ fontWeight: 'bold', fontSize: 25 }}

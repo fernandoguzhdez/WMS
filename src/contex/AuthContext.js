@@ -938,7 +938,6 @@ export const AuthProvider = ({ children }) => {
     }
 
     const ubicacionDesOri = (fromWhsCode, toWhsCode) => {
-        console.log('mandando a llamar al modal', fromWhsCode, toWhsCode)
         setIsModalSerieLote(!isModalSerieLote);
         obtenerUbicacionOri(fromWhsCode);
         obtenerUbicacionDes(toWhsCode);
@@ -984,6 +983,7 @@ export const AuthProvider = ({ children }) => {
         // Make GET request
         await axios.get(`${url}/api/SolTransferStock/Get_Disp_SerAndBatchs?ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}&WhsCode=${item.fromWhsCode}`, { headers })
             .then(response => {
+                console.log
                 setListaSeriesLotes(response.data.serialxManbach)
                 setFilterListaSeriesLotes(response.data.serialxManbach)
 
@@ -1062,6 +1062,7 @@ export const AuthProvider = ({ children }) => {
         ]
 
         tablaSeriesLotesTransfer.push(arrayPendiente[0]);
+        
 
         // Set headers
         const headers = {
@@ -1093,18 +1094,21 @@ export const AuthProvider = ({ children }) => {
             }, { headers })
             .then((response) => {
                 setIsLoading(false)
-                Alert.alert('Info', '¡Transferencia realizada con exito!', [
+                console.log('Esto es lo que se enviara...', tablaSeriesLotesTransfer)
+                Alert.alert('Info', '¡Se asigno con éxito!', [
                     {
                         text: 'OK', onPress: () => {
                             cargarTablaSeriesLotesTransfer()
                             getItemsTraslados(docEntry)
+                            setSelectedUbicacionDes(0)
+                            setSelectedUbicacionOri(0)
                         }
                     },
                 ]);
             })
             .catch(error => {
-                console.log('tabla de lotes...', tablaSeriesLotesTransfer)
-                console.log('articulo...', itemTraslado)
+                setSelectedUbicacionDes(0)
+                setSelectedUbicacionOri(0)
                 setIsLoading(false)
             });
     }
@@ -1345,7 +1349,7 @@ export const AuthProvider = ({ children }) => {
                 FiltrarArticulosTraslado, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes,
                 isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, cargarSeriesLotesDisp, listaSeriesLotes, setListaSeriesLotes, isModalSerieLote, setIsModalSerieLote,
                 selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes, ubicacionOri, setUbicacionOri, ubicacionDesOri, isEnter, setIsEnter,
-                ubicacionDes, setUbicacionDes,masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
+                ubicacionDes, setUbicacionDes, masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
                 searchDetalleInvSL, setSearchDetalleInvSL, handleSearchDetalleInvSL, searchDetalleInv, setSearchDetalleInv, handleSearchDetalleInv, dataCompleteDI, setDataCompleteDI, fetchDataDetalleInv, splitCadenaEscaner,
                 idCodeSL, setIdCodeSL
             }}

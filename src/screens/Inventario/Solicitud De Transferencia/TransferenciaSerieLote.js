@@ -31,6 +31,18 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
     const from = page * itemsPerPage;
     const to = Math.min((page + 1) * itemsPerPage, tablaSeriesLotesTransfer.length);
 
+    useEffect(()=> {
+        limpiarVariables()
+    },[])
+
+    const limpiarVariables = () => {
+        /* const unsubscribe = navigation.addListener('beforeRemove', () => {
+            setTablaSeriesLotesTransfer([])
+            console.log(tablaSeriesLotesTransfer)
+        });
+        return unsubscribe; */
+    }
+
     useEffect(() => {
         setPage(0);
         setSerieLoteTransfer(null)
@@ -193,7 +205,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                 <SearchBar
                     platform="default"
                     onChangeText={(text) => { console.log(text) }}
-                    onClearText={(text) => {console.log(text)}}
+                    onClearText={(text) => { console.log(text) }}
                     placeholder="Buscar aqui..."
                     placeholderTextColor="#888"
                     cancelButtonTitle="Cancel"
@@ -201,7 +213,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                     onCancel={() => console.log('cancelando...')}
                     //value={barcodeItemTraslados}
                     //onSubmitEditing={handleSubmit}
-                    inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, }}
+                    inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, color: '#000' }}
                     containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
                     theme
                 />
@@ -385,7 +397,7 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                             <Button
                                 title="Realizar transferencia"
                                 onPress={() => {
-                                    Alert.alert('Advertencia', '¿Estas seguro de continuar con la transferencia?', [,
+                                    Alert.alert('Advertencia', '¿Estas seguro de continuar con la asignación?', [,
                                         {
                                             text: 'Si', onPress: () => {
                                                 setIsModalTransferirSerieLote(!isModalTransferirSerieLote);

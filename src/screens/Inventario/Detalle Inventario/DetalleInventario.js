@@ -188,7 +188,7 @@ export const DetalleInventario = ({ navigation }) => {
             <List.Accordion
                 style={{ flex: 1, minWidth: '100%', backgroundColor: '#FFFFFF' }}
                 titleStyle={{ fontSize: windowsWidth > 500 ? 26 : 20, fontWeight: '600', color: '#000000' }}
-                title={'Almacen - '+item.WhsCode + ' - ' + item.ItemCode + ' - ' + item.ItemName}
+                title={'Almacen - ' + item.WhsCode + ' - ' + item.ItemCode + ' - ' + item.ItemName}
                 left={props => <List.Icon {...props} icon="folder" color='#828282' />}
                 expanded={expandedIndex === item.Id}
                 onPress={() => handleAccordionPress(item.Id)} >
@@ -461,7 +461,11 @@ export const DetalleInventario = ({ navigation }) => {
                             <Input
                                 value={cantidad.toString()}
                                 onChangeText={text => {
-                                    const nuevaCadena = text.replace(/[^0-9]/g, '');
+                                    const nuevaCadena = text.replace(/[^0-9.]/g, '');
+                                    // Verificar si hay más de un punto decimal
+                                    if ((nuevaCadena.match(/\./g) || []).length > 1) {
+                                        return;
+                                    }
                                     setCantidad(nuevaCadena)
                                 }}
                                 style={{ fontWeight: 'bold', fontSize: 25 }}

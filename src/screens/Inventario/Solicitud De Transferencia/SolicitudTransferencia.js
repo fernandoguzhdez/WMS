@@ -56,7 +56,7 @@ export function SolicitudTransferencia({ navigation }) {
             // Update FilteredDataSource
             setFilteredDataSource(
                 filteredDataSource.filter((item) =>
-                    item.referencia.toUpperCase().includes(text.toUpperCase()) || item.docEntry.toString().includes(text.toString())
+                    item.referencia.toUpperCase().includes(text.toUpperCase()) || item.docNum.toString().includes(text.toString())
                 )
             );
             setSearchSolicitudT(text);
@@ -125,8 +125,8 @@ export function SolicitudTransferencia({ navigation }) {
                         }
                     </View>
                     <View style={{ height: 90, width: '15%', alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'row' }}>
-                        <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', left: 20 }} size={50} color='lightgray' />
-                        <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', right: 10 }} size={50} color='gray' />
+                        <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', left: 20 }} size={50} color='#d3d3d3' />
+                        <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', right: 10 }} size={50} color='#808080' />
                     </View>
                 </View>
             </TouchableHighlight>
@@ -144,7 +144,7 @@ export function SolicitudTransferencia({ navigation }) {
                         onClear={(text) => searchFilterFunctionSolicitudT('')}
                         placeholder="Buscar..."
                         value={searchSolicitudT}
-                        inputStyle={{ backgroundColor: '#fff', borderRadius: 10, }}
+                        inputStyle={{ backgroundColor: '#fff', borderRadius: 10, color:'#000' }}
                         containerStyle={{ backgroundColor: '#fff', borderRadius: 50, margin: 20, padding: 0, borderColor: '#fff' }}
                         theme
                     /> :
@@ -179,7 +179,7 @@ export function SolicitudTransferencia({ navigation }) {
                                         reverse
                                         name="trash"
                                         size={20}
-                                        color="white"
+                                        color="#fff"
                                     />
                                 }
                                 iconTop
@@ -198,7 +198,7 @@ export function SolicitudTransferencia({ navigation }) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: 'white',
+        backgroundColor: '#fff',
     },
     itemStyle: {
         padding: 10,
@@ -221,8 +221,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
     },
     badge: {
-        backgroundColor: 'blue',
-        color: 'black',
+        color: '#fff',
         fontSize: 24,
     },
     rowBack: {
@@ -232,16 +231,8 @@ const styles = StyleSheet.create({
         height: 90,
         marginVertical: 2,
     },
-    rowBackButtonCancelar: {
-        backgroundColor: 'blue',
-        width: 100,
-        height: 90,
-        textAlign: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column'
-    },
     rowBackButtonEliminar: {
-        backgroundColor: 'red',
+        backgroundColor: '#ff0000',
         width: 100,
         height: 90,
         textAlign: 'center',

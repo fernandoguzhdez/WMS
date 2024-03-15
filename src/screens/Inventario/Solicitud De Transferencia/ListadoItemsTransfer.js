@@ -47,9 +47,14 @@ export function ListadoItemsTransfer({ navigation, route }) {
             setItemTraslado([])
             setBarcodeItemTraslados(null)
         });
-
         return unsubscribe;
     }
+
+    useEffect(() => {
+        if (ubicacionOri == undefined || ubicacionOri.length == 0) {
+            console.log('ubicacion origen...', ubicacionOri)
+        }
+    }, [ubicacionOri])
 
     const obtenerUbicacionOri = (fromWhsCode) => {
         almacenes.map((item) => {
@@ -158,9 +163,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
     useEffect(() => {
         if (isEnter == true) {
             navigation.navigate('ListadoSeriesLotes')
-            console.log('ubicaciones desde listado....', fromWhsCode, toWhsCode)
             ubicacionDesOri(fromWhsCode, toWhsCode)
-            console.log('almacenes', almacenes)
         }
     }, [isEnter])
 
@@ -184,7 +187,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
     };
 
     // Componente de tarjeta reutilizable
-    const Card = ({ item, btnTitle }) => (
+    const Card = ({ item, btnTitle, metodo, icono }) => (
         <View style={{ ...styles.card, width: windowsWidth > 500 ? 350 : 300 }}>
             <View style={styles.header}>
                 <Text style={styles.title}>{item.itemCode}</Text>
@@ -230,80 +233,32 @@ export function ListadoItemsTransfer({ navigation, route }) {
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ alignItems: 'center' }}>
-                        <Text style={{ fontSize: 28 }}>Contados</Text>
+                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Contados</Text>
                         <Text style={styles.content}>{item.countQty}</Text>
                     </View>
                     <View style={{ alignItems: 'center' }}>
-                        <Text style={{ fontSize: 28 }}>Total</Text>
+                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Total</Text>
                         <Text style={styles.content}>{item.totalQty}</Text>
                     </View>
                 </View>
             </View>
             <View style={{ margin: 20 }}>
-                {item.gestionItem == 'I' ?
-                    <Button
-                        buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
-                        titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
-                        containerStyle={{ alignItems: 'center' }}
-                        onPress={() => { ubicacionDestino(item.fromWhsCode, item.toWhsCode), setItemTraslado(item) }}
-                        icon={
-                            <Icon
-                                name="exchange"
-                                type='font-awesome'
-                                size={25}
-                                color="#fff"
-                                iconStyle={{ paddingHorizontal: 10 }}
-                            />
-                        }
-                        title={btnTitle}
-                    /> : item.gestionItem == 'S' ?
-                        <Button
-                            buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
-                            titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
-                            containerStyle={{ alignItems: 'center' }}
-                            onPress={() => {
-                                navigation.navigate('ListadoSeriesLotes', item)
-                                //setIsModalSeriesLotes(!isModalSeriesLotes);
-                                cargarSeriesLotesDisp(item)
-                                //setItemsTraslados([])
-                                setFilterListaSeriesLotes([])
-                                setItemTraslado(item)
-                            }}
-                            icon={
-                                <Icon
-                                    name="eye"
-                                    type='font-awesome'
-                                    size={windowsWidth > 500 ? 25 : 18}
-                                    color="#fff"
-                                    iconStyle={{ paddingHorizontal: 10 }}
-                                />
-                            }
-                            title="Ver Series"
-                        /> :
-                        <Button
-                            buttonStyle={{ backgroundColor: '#3b5958', width: '80%' }}
-                            titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
-                            containerStyle={{ alignItems: 'center' }}
-                            onPress={() => {
-                                navigation.navigate('ListadoSeriesLotes', item)
-                                //setIsModalSeriesLotes(!isModalSeriesLotes);
-                                cargarSeriesLotesDisp(item)
-                                setItemTraslado(item)
-                                //setItemsTraslados([])
-                                setFilterListaSeriesLotes([])
-                            }}
-                            icon={
-                                <Icon
-                                    name="eye"
-                                    type='font-awesome'
-                                    size={windowsWidth > 500 ? 25 : 18}
-                                    color="#fff"
-                                    iconStyle={{ paddingHorizontal: 10 }}
-                                />
-                            }
-                            title="Ver Lotes"
+                <Button
+                    buttonStyle={{ backgroundColor: '#3b5958', width: '100%' }}
+                    titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10, color: '#fff' }}
+                    containerStyle={{ alignItems: 'center' }}
+                    onPress={metodo}
+                    icon={
+                        <Icon
+                            name={icono}
+                            type='font-awesome'
+                            size={25}
+                            color="#fff"
+                            iconStyle={{ paddingHorizontal: 10 }}
                         />
-                }
+                    }
+                    title={btnTitle}
+                />
             </View>
         </View>
     );
@@ -322,14 +277,27 @@ export function ListadoItemsTransfer({ navigation, route }) {
                 onCancel={() => console.log('cancelando...')}
                 value={barcodeItemTraslados}
                 onSubmitEditing={handleSubmit}
-                inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, }}
+                inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, color: '#000' }}
                 containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
                 theme
             />
             <FlatList
                 data={itemsTraslados}
                 renderItem={({ item }) =>
-                    <Card item={item} btnTitle={'Seleccionar Articulo'} />}
+                    <Card
+                        item={item}
+                        btnTitle={item.gestionItem == 'I' ? 'Seleccionar Articulo' : item.gestionItem == 'L' ? 'Ver Lotes' : 'Ver Series'}
+                        icono={item.gestionItem == 'I' ? 'exchange' : 'eye'}
+                        metodo={item.gestionItem == 'I' ? () => {
+                            ubicacionDestino(item.fromWhsCode, item.toWhsCode)
+                            setItemTraslado(item)
+                        } : () => {
+                            navigation.navigate('ListadoSeriesLotes', item)
+                            cargarSeriesLotesDisp(item)
+                            setItemTraslado(item)
+                            setFilterListaSeriesLotes([])
+                        }}
+                    />}
                 keyExtractor={(item, index) => index.toString()}
                 numColumns={windowsWidth > 500 ? 2 : 1}
                 contentContainerStyle={styles.flatListContent}
@@ -346,17 +314,20 @@ export function ListadoItemsTransfer({ navigation, route }) {
 
                     <View style={windowsWidth > 500 ? { flexDirection: 'row', margin: 30, columnGap: 30 } : { flexDirection: 'col' }}>
                         <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            <SelectList
-                                setSelected={(val) => setSelectedUbicacionOri(val)}
-                                data={ubicacionOri}
-                                save="key"
-                                inputStyles={{ fontSize: 18, color: '#000' }}
-                                boxStyles={{ width: '100%' }}
-                                onSelect={() => console.log(selectedAlmacenOri, selectedUbicacionOri)}
-                                placeholder='Ubicacion origen'
-                                searchPlaceholder='buscar...'
-                                dropdownTextStyles={{ color: '#808080' }}
-                            />
+                            {ubicacionOri == undefined || ubicacionOri.length == 0 ?
+                                <Text style={styles.content}>Sin ubicacion de origen</Text> :
+                                <SelectList
+                                    setSelected={(val) => setSelectedUbicacionOri(val)}
+                                    data={ubicacionOri}
+                                    save="key"
+                                    inputStyles={{ fontSize: 18, color: '#000' }}
+                                    boxStyles={{ width: '100%' }}
+                                    onSelect={() => console.log(selectedAlmacenOri, selectedUbicacionOri)}
+                                    placeholder='Ubicacion origen'
+                                    searchPlaceholder='buscar...'
+                                    dropdownTextStyles={{ color: '#808080' }}
+                                />
+                            }
                         </View>
                         <Icon
                             name={windowsWidth > 500 ? "arrow-right" : 'arrow-down'}
@@ -367,17 +338,20 @@ export function ListadoItemsTransfer({ navigation, route }) {
                             containerStyle={{ justifyContent: 'center' }}
                         />
                         <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            <SelectList
-                                setSelected={(val) => setSelectedUbicacionDes(val)}
-                                data={ubicacionDes}
-                                save="key"
-                                inputStyles={{ fontSize: 18, color: '#000' }}
-                                boxStyles={{ width: '100%' }}
-                                onSelect={() => console.log(selectedAlmacenDes, selectedUbicacionDes)}
-                                placeholder='Ubicacion destino'
-                                searchPlaceholder='buscar...'
-                                dropdownTextStyles={{ color: '#808080' }}
-                            />
+                            {ubicacionDes == undefined || ubicacionDes.length == 0 ?
+                                <Text style={styles.content}>Sin ubicacion de destino</Text> :
+                                <SelectList
+                                    setSelected={(val) => setSelectedUbicacionDes(val)}
+                                    data={ubicacionDes}
+                                    save="key"
+                                    inputStyles={{ fontSize: 18, color: '#000' }}
+                                    boxStyles={{ width: '100%' }}
+                                    onSelect={() => console.log(selectedAlmacenDes, selectedUbicacionDes)}
+                                    placeholder='Ubicacion destino'
+                                    searchPlaceholder='buscar...'
+                                    dropdownTextStyles={{ color: '#808080' }}
+                                />
+                            }
                         </View>
                     </View>
                     <View style={{ flexDirection: 'row', marginTop: 10, width: '100%', justifyContent: 'center' }}>
@@ -397,7 +371,11 @@ export function ListadoItemsTransfer({ navigation, route }) {
                         <Input
                             value={cantidad.toString()}
                             onChangeText={text => {
-                                const nuevaCadena = text.replace(/[^0-9]/g, '');
+                                const nuevaCadena = text.replace(/[^0-9.]/g, '');
+                                // Verificar si hay más de un punto decimal
+                                if ((nuevaCadena.match(/\./g) || []).length > 1) {
+                                    return;
+                                }
                                 setCantidad(nuevaCadena)
                             }}
                             style={{ fontWeight: 'bold', fontSize: 25, textAlign: 'center', borderWidth: 1, borderColor: '#3b5998', borderCurve: 'circular' }}
