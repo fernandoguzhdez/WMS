@@ -84,11 +84,12 @@ export function SolicitudTransferencia({ navigation }) {
         ).then(response => {
             console.log('Respuesta...', response.status)
             getAlmacenes();
+            getDocuments()
             setIsLoading(false)
         })
             .catch(error => {
                 setIsLoading(false)
-                console.log(error.message)
+                console.log('Error al cerrar',error.message)
             });
     }
 
