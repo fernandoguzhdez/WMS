@@ -117,6 +117,10 @@ export function TomaInventario(props) {
     )
   }
 
+  const handeSubmit = () => {
+    console.log('Enter...')
+  }
+
   return (
     <ScrollView>
       <Spinner visible={isLoading} size={60} color='#ffff' />
@@ -172,6 +176,7 @@ export function TomaInventario(props) {
             placeholder='Escanea o ingresa el Codigo'
             value={searchBarcode}
             onChangeText={text => setSearchBarcode(text)}
+            onSubmitEditing={handeSubmit}
             style={{ margin: 5, fontSize: 18, color: '#000' }}
           />
         </View>

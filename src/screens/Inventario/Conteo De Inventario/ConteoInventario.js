@@ -138,7 +138,7 @@ export function ConteoInventario({ navigation }) {
               />
             </View>
           )}
-          rightOpenValue={swipe}
+          rightOpenValue={200}
           stopLeftSwipe={-1}
         />
 

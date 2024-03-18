@@ -109,19 +109,49 @@ export const AuthProvider = ({ children }) => {
 
         switch (modulo) {
             case 'EnterSolicitudTransferencia':
-                let filtradoArticulo = FiltrarArticulosTraslado(codigoArticulo, almacen, ubicacion)
-                if (filtradoArticulo == 0) {
-                    console.log('no se encontro')
+                if (partes.length == 3) {
+                    let filtradoArticuloEscaner = searchFilterItemsTrasladosEscan(partes[0], partes[1], partes[2])
+                    if (filtradoArticuloEscaner == 0) {
+                        Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
+                            {
+                                text: 'OK', onPress: () => {
+                                    setItemsTraslados(tablaItemsTraslados)
+                                }
+                            },
+                        ]);
+                    } else {
+                        setItemsTraslados(filtradoArticuloEscaner)
+                    }
                 } else {
-                    cargarSeriesLotesDisp(filtradoArticulo[0], idCodeSerieLote, 'escaner')
-                    setItemTraslado(filtradoArticulo[0])
+                    let filtradoSerieLoteEscaner = FiltrarArticulosTraslado(codigoArticulo, almacen, ubicacion)
+                    if (filtradoSerieLoteEscaner == 0) {
+                        Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
+                            {
+                                text: 'OK', onPress: () => {
+                                    setItemsTraslados(tablaItemsTraslados)
+                                }
+                            },
+                        ]);
+                    } else {
+                        cargarSeriesLotesDisp(filtradoSerieLoteEscaner[0], idCodeSerieLote, 'escaner')
+                        setItemTraslado(filtradoSerieLoteEscaner[0])
+                        setItemsTraslados(tablaItemsTraslados)
+                    }
                 }
-
-                //setIdCodeSL(partes)
                 break;
             case 'EscanerSolicitudTransferencia':
-                FiltrarArticulosTraslado(dato2, codigoArticulo)
-                //setIdCodeSL(partes)
+                let filtradoArticuloEscan = FiltrarArticulosTraslado(codigoArticulo, almacen, ubicacion)
+                if (filtradoArticuloEscan == 0) {
+                    Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
+                        {
+                            text: 'OK', onPress: () => {
+                            }
+                        },
+                    ]);
+                } else {
+                    cargarSeriesLotesDisp(filtradoArticuloEscan[0], idCodeSerieLote, 'escaner')
+                    setItemTraslado(filtradoArticuloEscan[0])
+                }
                 break;
             case 'EnterSolicitudTransferenciaSeriesLotes':
                 FiltrarArticulosTraslado(dato2, codigoArticulo)
@@ -874,6 +904,30 @@ export const AuthProvider = ({ children }) => {
     }
 
     //METODOS PARA EL MODULO DE TRASLADOS
+    const searchFilterItemsTraslados = (text) => {
+        console.log('buscando articulo', text)
+        // Check if searched text is not blank
+        if (text) {
+            setItemsTraslados(
+                itemsTraslados.filter((item) =>
+                    item.itemCode.toUpperCase().includes(text.toUpperCase()) ||
+                    item.itemDesc.toUpperCase().includes(text.toUpperCase()) ||
+                    item.fromWhsCode.toUpperCase().includes(text.toUpperCase())
+                )
+            );
+        } else {
+            // Inserted text is blank
+            // Update FilteredDataSource with tablaSolicitudTransfer
+            setItemsTraslados(tablaItemsTraslados)
+        }
+    };
+
+    const searchFilterItemsTrasladosEscan = (itemCode, fromWhsCode, fromBinEntry) => {
+        return tablaItemsTraslados.filter(item => {
+            return item.itemCode == itemCode && item.fromWhsCode == fromWhsCode && item.fromBinEntry == fromBinEntry;
+        });
+    };
+
     const getItemsTraslados = (docEntry) => {
         // Set headers
         const headers = {
@@ -988,19 +1042,25 @@ export const AuthProvider = ({ children }) => {
                 setFilterListaSeriesLotes(response.data.serialxManbach)
 
                 if (accion == 'escaner') {
-                    setIsEnter(true)
                     let filtradoSerieLote = FiltrarSerieLoteTraslado(response.data.serialxManbach, idCode)
-                    console.log('Aqui tienes tu idCode', filtradoSerieLote[0])
                     if (filtradoSerieLote.length == 0) {
-                        console.log('no se encontre el lote')
+                        Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
+                            {
+                                text: 'OK', onPress: () => {
+                                }
+                            },
+                        ]);
+                        setIsEnter(false)
                     } else {
                         setDataSerieLoteTransfer(filtradoSerieLote[0])
+                        setIsEnter(true)
                     }
 
                 }
             })
             .catch(error => {
                 console.error('Error al traer los lotes', error);
+                setIsEnter(false)
             });
     };
 
@@ -1062,7 +1122,7 @@ export const AuthProvider = ({ children }) => {
         ]
 
         tablaSeriesLotesTransfer.push(arrayPendiente[0]);
-        
+
 
         // Set headers
         const headers = {
@@ -1346,7 +1406,7 @@ export const AuthProvider = ({ children }) => {
                 setIndexTab, indexTab,
                 filtrarSerie, serialsLotes, setSerialsLotes, contadorSerie, setArraySeries, verificarEscaneoSerie, textSerie, setTextSerie, moduloScan, setModuloScan, lote, setLote, verificarLote, guardarConteoLote,
                 setIsLoadingItems, isLoadingItems, isLoadingCerrarConteo, setIsLoadingCerrarConteo, lotes, setLotes, cantidadSerieLote, setCantidadSerieLote, contadorClic, setContadorClic,
-                FiltrarArticulosTraslado, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes,
+                FiltrarArticulosTraslado, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes, searchFilterItemsTraslados, searchFilterItemsTrasladosEscan,
                 isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, cargarSeriesLotesDisp, listaSeriesLotes, setListaSeriesLotes, isModalSerieLote, setIsModalSerieLote,
                 selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes, ubicacionOri, setUbicacionOri, ubicacionDesOri, isEnter, setIsEnter,
                 ubicacionDes, setUbicacionDes, masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,

@@ -83,6 +83,8 @@ export function SolicitudTransferencia({ navigation }) {
             { headers }
         ).then(response => {
             console.log('Respuesta...', response.status)
+            setFilteredDataSource([])
+            setTablaSolicitudTransfer([])
             getAlmacenes();
             getDocuments()
             setIsLoading(false)

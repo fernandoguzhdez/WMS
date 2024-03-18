@@ -13,7 +13,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
     const { url, tokenInfo, setModuloScan, setIsLoading, isLoading, barcodeItemTraslados, setBarcodeItemTraslados, setItemsTraslados, itemsTraslados, setItemTraslado,
         itemTraslado, getAlmacenes, almacenes, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ubicacionOrigen, splitCadenaEscaner, idCodeSL, setIdCodeSL, ComprobarSerieLoteTransfer,
         tablaItemsTraslados, cargarSeriesLotesDisp, setFilterListaSeriesLotes, dataSerieLoteTransfer, isModalSerieLote, setIsModalSerieLote, ubicacionDesOri,
-        isEnter } = useContext(AuthContext);
+        isEnter, searchFilterItemsTraslados, searchFilterItemsTrasladosEscan } = useContext(AuthContext);
 
     const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
     const [cantidad, setCantidad] = useState('1');
@@ -125,7 +125,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
             }, { headers })
             .then((response) => {
                 setIsLoading(false);
-                Alert.alert('Info', '¡Transferencia realizada con exito!', [
+                Alert.alert('Info', 'Asignación realizada con éxito!', [
                     { text: 'OK', onPress: () => { getItemsTraslados(docEntry); setIsModalVisible(!isModalVisible); } },
                 ]);
             })
@@ -148,7 +148,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
         //setIsLoading(true)
         splitCadenaEscaner(barcodeItemTraslados, route.params.docEntry, 'EnterSolicitudTransferencia')
         //Se vuelve a llenar la tabla ya que al usar el enter deja en blanco la ventana
-        setItemsTraslados(tablaItemsTraslados)
+       // setItemsTraslados(tablaItemsTraslados)
     }
 
     /*  useEffect(() => {
@@ -167,24 +167,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
         }
     }, [isEnter])
 
-    const searchFilterItemsTraslados = (text) => {
-        // Check if searched text is not blank
-        if (text) {
-            setItemsTraslados(
-                itemsTraslados.filter((item) =>
-                    item.itemCode.toUpperCase().includes(text.toUpperCase()) ||
-                    item.itemDesc.toUpperCase().includes(text.toUpperCase()) ||
-                    item.fromWhsCode.toUpperCase().includes(text.toUpperCase())
-                )
-            );
-            setSearchItemsTraslados(text);
-        } else {
-            // Inserted text is blank
-            // Update FilteredDataSource with tablaSolicitudTransfer
-            setItemsTraslados(tablaItemsTraslados);
-            setSearchItemsTraslados(text);
-        }
-    };
+
 
     // Componente de tarjeta reutilizable
     const Card = ({ item, btnTitle, metodo, icono }) => (
@@ -268,8 +251,14 @@ export function ListadoItemsTransfer({ navigation, route }) {
             <Spinner visible={isLoading} size={60} color='#ffff' />
             <SearchBar
                 platform="default"
-                onChangeText={(text) => { searchFilterItemsTraslados(text); text == '' ? setBarcodeItemTraslados(null) : setBarcodeItemTraslados(text.toLocaleUpperCase()) }}
-                onClearText={(text) => searchFilterItemsTraslados(text)}
+                onChangeText={(text) => {
+                    searchFilterItemsTraslados(text);
+                    text == '' ? setBarcodeItemTraslados(null) : setBarcodeItemTraslados(text.toLocaleUpperCase())
+
+                }}
+                onClearText={(text) => {
+                    searchFilterItemsTraslados(text)
+                }}
                 placeholder="Buscar aqui..."
                 placeholderTextColor="#888"
                 cancelButtonTitle="Cancel"
@@ -294,6 +283,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                         } : () => {
                             navigation.navigate('ListadoSeriesLotes', item)
                             cargarSeriesLotesDisp(item)
+                            setItemsTraslados(tablaItemsTraslados)
                             setItemTraslado(item)
                             setFilterListaSeriesLotes([])
                         }}
@@ -405,6 +395,8 @@ export function ListadoItemsTransfer({ navigation, route }) {
                                 setEnableButton(true)
                                 if (suma <= totalQty) {
                                     transferirItem();
+                                    setBarcodeItemTraslados(null)
+                                    setItemsTraslados(tablaItemsTraslados)
                                     setEnableButton(false)
                                 } else {
                                     console.log('Suma...', cantidad + ' : ' + countQty)
@@ -430,6 +422,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                 onPress={() => {
                     setSerieLoteTransfer(null)
                     navigation.navigate('Scanner', route.params.docEntry);
+                    setItemsTraslados(tablaItemsTraslados)
                     setModuloScan(4)
                 }}
             >

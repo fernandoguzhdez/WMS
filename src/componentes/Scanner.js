@@ -94,7 +94,7 @@ export const Scanner = ({ navigation, route }) => {
                                     setBarcodeItemTraslados(barcodes[0].data)
                                     FiltrarItemsTraslados(route.params, barcodes[0].data)
                                 } */
-                                splitCadenaEscaner(barcodes[0].data, route.params, 'EscanerSolicitudTransferencia')
+                                splitCadenaEscaner(barcodes[0].data.toUpperCase(), route.params, 'EscanerSolicitudTransferencia')
                                 setIsLoading(false)
                                 break;
                             case 5:
