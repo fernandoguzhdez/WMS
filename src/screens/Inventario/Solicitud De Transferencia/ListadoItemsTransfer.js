@@ -15,7 +15,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
         tablaItemsTraslados, cargarSeriesLotesDisp, setFilterListaSeriesLotes, dataSerieLoteTransfer, isModalSerieLote, setIsModalSerieLote, ubicacionDesOri,
         isEnter, searchFilterItemsTraslados, searchFilterItemsTrasladosEscan } = useContext(AuthContext);
 
-    const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
+    const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, pendiente, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
     const [cantidad, setCantidad] = useState('1');
     const windowsWidth = useWindowDimensions().width;
     const windowsHeight = useWindowDimensions().height;
@@ -148,7 +148,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
         //setIsLoading(true)
         splitCadenaEscaner(barcodeItemTraslados, route.params.docEntry, 'EnterSolicitudTransferencia')
         //Se vuelve a llenar la tabla ya que al usar el enter deja en blanco la ventana
-       // setItemsTraslados(tablaItemsTraslados)
+        // setItemsTraslados(tablaItemsTraslados)
     }
 
     /*  useEffect(() => {
@@ -224,6 +224,12 @@ export function ListadoItemsTransfer({ navigation, route }) {
                         <Text style={styles.content}>{item.totalQty}</Text>
                     </View>
                 </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Pendientes</Text>
+                        <Text style={styles.content}>{item.pendiente}</Text>
+                    </View>
+                </View>
             </View>
             <View style={{ margin: 20 }}>
                 <Button
@@ -280,6 +286,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                         metodo={item.gestionItem == 'I' ? () => {
                             ubicacionDestino(item.fromWhsCode, item.toWhsCode)
                             setItemTraslado(item)
+                            console.log('Articulo...', item)
                         } : () => {
                             navigation.navigate('ListadoSeriesLotes', item)
                             cargarSeriesLotesDisp(item)
@@ -391,15 +398,17 @@ export function ListadoItemsTransfer({ navigation, route }) {
                         <Button
                             title="Confirmar y enviar"
                             onPress={() => {
-                                let suma = cantidad + countQty;
+                                let suma = Number(cantidad) + Number(countQty);
+                                console.log(cantidad + ' : ' + countQty + ' : ' + pendiente)
                                 setEnableButton(true)
-                                if (suma <= totalQty) {
+                                if (suma <= pendiente) {
                                     transferirItem();
                                     setBarcodeItemTraslados(null)
                                     setItemsTraslados(tablaItemsTraslados)
                                     setEnableButton(false)
+                                    setCantidad('1')
                                 } else {
-                                    console.log('Suma...', cantidad + ' : ' + countQty)
+                                    console.log('Suma...', cantidad + ' : ' + Number(countQty))
                                     Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de articulos a transferir!', [
                                         { text: 'OK', onPress: () => setEnableButton(false) },
                                     ]);
@@ -409,7 +418,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                         />
                         <Button
                             title="Cancelar"
-                            onPress={() => { setIsModalVisible(!isModalVisible); setItemTrasladoSeleccionado([]) }}
+                            onPress={() => { setIsModalVisible(!isModalVisible); setItemTrasladoSeleccionado([]); setCantidad('1') }}
                             buttonStyle={{ backgroundColor: '#F80000' }}
                             disabled={enableButton}
                         />
@@ -478,7 +487,7 @@ const styles = StyleSheet.create({
     },
     ContainerContent: {
         padding: 5,
-        gap: 30
+        gap: 15
     },
     content: {
         fontSize: 28,

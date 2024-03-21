@@ -922,6 +922,30 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const enviarTransferencia = async (docEntry) => {
+        console.log('Este es el docEntry...', docEntry)
+        const headers = {
+            Accept: "application/json",
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        await axios.post(`${url}/api/SolTransferStock/Close?IdCounted=${docEntry}`, { docEntry }, { headers }
+        )
+            .then(response => {
+                console.log('Respuesta...', response.status)
+                setFilteredDataSource([])
+                setTablaSolicitudTransfer([])
+                getAlmacenes();
+                getDocuments()
+                setIsLoading(false)
+            })
+            .catch(error => {
+                setIsLoading(false)
+                console.log('Error al cerrar', error.message)
+            });
+    }
+
     const searchFilterItemsTrasladosEscan = (itemCode, fromWhsCode, fromBinEntry) => {
         return tablaItemsTraslados.filter(item => {
             return item.itemCode == itemCode && item.fromWhsCode == fromWhsCode && item.fromBinEntry == fromBinEntry;
@@ -940,6 +964,7 @@ export const AuthProvider = ({ children }) => {
                 setIsLoading(false)
                 setItemsTraslados(response.data.owtr[0].items)
                 setTablaItemsTraslados(response.data.owtr[0].items)
+                console.log('ITEMS TRASLADOS....', response.data.owtr[0].items)
             })
             .catch(error => {
                 console.error('Error al obtener los articulos de transferencia', error);
@@ -1406,10 +1431,10 @@ export const AuthProvider = ({ children }) => {
                 setIndexTab, indexTab,
                 filtrarSerie, serialsLotes, setSerialsLotes, contadorSerie, setArraySeries, verificarEscaneoSerie, textSerie, setTextSerie, moduloScan, setModuloScan, lote, setLote, verificarLote, guardarConteoLote,
                 setIsLoadingItems, isLoadingItems, isLoadingCerrarConteo, setIsLoadingCerrarConteo, lotes, setLotes, cantidadSerieLote, setCantidadSerieLote, contadorClic, setContadorClic,
-                FiltrarArticulosTraslado, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes, searchFilterItemsTraslados, searchFilterItemsTrasladosEscan,
-                isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, cargarSeriesLotesDisp, listaSeriesLotes, setListaSeriesLotes, isModalSerieLote, setIsModalSerieLote,
-                selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes, ubicacionOri, setUbicacionOri, ubicacionDesOri, isEnter, setIsEnter,
-                ubicacionDes, setUbicacionDes, masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
+                FiltrarArticulosTraslado, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes,
+                searchFilterItemsTraslados, searchFilterItemsTrasladosEscan, enviarTransferencia, isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, cargarSeriesLotesDisp,
+                listaSeriesLotes, setListaSeriesLotes, isModalSerieLote, setIsModalSerieLote, selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes, ubicacionOri,
+                setUbicacionOri, ubicacionDesOri, isEnter, setIsEnter, ubicacionDes, setUbicacionDes, masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
                 searchDetalleInvSL, setSearchDetalleInvSL, handleSearchDetalleInvSL, searchDetalleInv, setSearchDetalleInv, handleSearchDetalleInv, dataCompleteDI, setDataCompleteDI, fetchDataDetalleInv, splitCadenaEscaner,
                 idCodeSL, setIdCodeSL
             }}

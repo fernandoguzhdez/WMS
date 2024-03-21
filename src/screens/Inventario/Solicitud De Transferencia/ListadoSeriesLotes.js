@@ -12,9 +12,10 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
     const { url, tokenInfo, isLoading, setSerieLoteTransfer, listaSeriesLotes, ComprobarSerieLoteTransfer, barcodeItemTraslados, setBarcodeItemTraslados,
         filterListaSeriesLotes, setFilterListaSeriesLotes, getAlmacenes, almacenes, getItemsTraslados, setItemTraslado, itemTraslado, ActualizarSerieLoteTransfer,
         setDataSerieLoteTransfer, dataSerieLoteTransfer, setTablaSeriesLotesTransfer, isModalSerieLote, setIsModalSerieLote, ubicacionOri, setUbicacionOri, ubicacionDesOri,
-        ubicacionDes, setUbicacionDes, selectedUbicacionOri, setSelectedUbicacionOri, selectedUbicacionDes, setSelectedUbicacionDes, setIsEnter, isEnter, cargarTablaSeriesLotesTransfer } = useContext(AuthContext);
+        ubicacionDes, setUbicacionDes, selectedUbicacionOri, setSelectedUbicacionOri, selectedUbicacionDes, setSelectedUbicacionDes, setIsEnter, isEnter, cargarTablaSeriesLotesTransfer,
+        enviarTransferencia } = useContext(AuthContext);
 
-    const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
+    const { docEntry, lineNum, itemCode, barCode, itemDesc, pendiente, gestionItem, fromWhsCode, fromBinCode, fromBinEntry, toWhsCode, totalQty, countQty, counted, toBinEntry, binCode } = itemTraslado
 
     const [cantidad, setCantidad] = useState('1');
     const windowsWidth = useWindowDimensions().width;
@@ -145,26 +146,57 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                 containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
                 theme
             />
-            <Button
-                buttonStyle={{ backgroundColor: '#3b5958', width: 'auto' }}
-                titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
-                containerStyle={{ alignItems: 'flex-end', marginHorizontal: 40 }}
-                onPress={() => {
-                    navigation.navigate('TransferenciaSerieLote')
-                    //cargarTablaSeriesLotesTransfer();
-                    //setTablaSeriesLotesTransfer([]);
-                }}
-                icon={
-                    <Icon
-                        name="eye"
-                        type='font-awesome'
-                        size={windowsWidth > 500 ? 25 : 18}
-                        color="#fff"
-                        iconStyle={{ paddingHorizontal: 10 }}
-                    />
-                }
-                title="Ver Enviados"
-            />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <Button
+                    buttonStyle={{ ...styles.ButtonTransferir }}
+                    titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
+                    onPress={() => {
+                        Alert.alert('Info', '¿Estas seguro de continuar con la transferencia?', [
+                            {
+                                text: 'Cancelar',
+                                onPress: () => console.log('Cancel Pressed'),
+                                style: 'cancel',
+                            },
+                            {
+                                text: 'Enviar', onPress: () => {
+                                    enviarTransferencia(docEntry);
+                                    navigation.navigate('ListadoItemsTransfer')
+                                }
+                            },
+                        ]);
+                    }}
+                    icon={
+                        <Icon
+                            name="exchange"
+                            type='font-awesome'
+                            size={windowsWidth > 500 ? 25 : 18}
+                            color="#fff"
+                            iconStyle={{ paddingHorizontal: 10 }}
+                        />
+                    }
+                    title="Transferir"
+                />
+                <Button
+                    buttonStyle={{ backgroundColor: '#3b5958', width: 'auto' }}
+                    titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
+                    containerStyle={{ alignItems: 'flex-end', marginHorizontal: 40 }}
+                    onPress={() => {
+                        navigation.navigate('TransferenciaSerieLote')
+                        //cargarTablaSeriesLotesTransfer();
+                        //setTablaSeriesLotesTransfer([]);
+                    }}
+                    icon={
+                        <Icon
+                            name="eye"
+                            type='font-awesome'
+                            size={windowsWidth > 500 ? 25 : 18}
+                            color="#fff"
+                            iconStyle={{ paddingHorizontal: 10 }}
+                        />
+                    }
+                    title="Ver Enviados"
+                />
+            </View>
             <FlatList
                 data={filterListaSeriesLotes}
                 renderItem={({ item }) =>
@@ -278,10 +310,19 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                                 Alert.alert('Advertencia', '¿Estas seguro de continuar con la asignación?', [,
                                     {
                                         text: 'Si', onPress: () => {
+                                            let suma = Number(cantidad) + countQty;
+
+                                            if (suma <= pendiente) {
+                                                console.log('Es menor o igual', pendiente + ' : ' + suma)
+                                                ActualizarSerieLoteTransfer(cantidad);
+                                                setCantidad('1')
+                                            } else {
+                                                Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de elementos a asignar!', [
+                                                    { text: 'OK', onPress: () => { } },
+                                                ]);
+                                            }
                                             setIsModalSerieLote(!isModalSerieLote);
-                                            ActualizarSerieLoteTransfer(cantidad);
                                             //setIsLoading(true)
-                                            setCantidad('1')
                                             if (isEnter == true) {
                                                 setIsEnter(false)
                                             }
@@ -289,7 +330,7 @@ export const ListadoSeriesLotes = ({ navigation, route }) => {
                                     },
                                     {
                                         text: 'Cancelar',
-                                        onPress: () => console.log('Cancel Pressed'),
+                                        onPress: () => setCantidad('1'),
                                         style: 'cancel',
                                     }
                                 ])
@@ -362,7 +403,7 @@ const styles = StyleSheet.create({
     },
     ContainerContent: {
         padding: 5,
-        gap: 30
+        gap: 15
     },
     content: {
         fontSize: 28,
@@ -387,5 +428,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#800000', // Change the color as needed
         borderRadius: 28,
         elevation: 8, // Android shadow
+    },
+    ButtonTransferir: {
+        backgroundColor: '#3b5958',
+        width: 'auto'
     }
 });

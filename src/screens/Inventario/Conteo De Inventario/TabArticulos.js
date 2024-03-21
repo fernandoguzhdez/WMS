@@ -14,13 +14,13 @@ export function TabArticulos({ route, navigation }) {
     return (
         <>
             <TabView value={indexTab} onChange={setIndexTab} animationType="spring" disableSwipe={true} >
-                <TabView.Item style={{ backgroundColor: 'white', width: '100%' }}>
+                <TabView.Item style={{ backgroundColor: '#fff', width: '100%' }}>
                     <TomaInventario props={route.params.docEntry} />
                 </TabView.Item>
-                <TabView.Item style={{ backgroundColor: 'white', width: '100%' }}>
+                <TabView.Item style={{ backgroundColor: '#fff', width: '100%' }}>
                     <SeriesLotes />
                 </TabView.Item>
-                <TabView.Item style={{ backgroundColor: 'white', width: '100%' }}>
+                <TabView.Item style={{ backgroundColor: '#fff', width: '100%' }}>
                     <Articulos />
                 </TabView.Item>
             </TabView>
@@ -29,7 +29,7 @@ export function TabArticulos({ route, navigation }) {
                 value={indexTab}
                 onChange={(e) => { setIndexTab(e) }}
                 indicatorStyle={{
-                    backgroundColor: 'white',
+                    backgroundColor: '#fff',
                     height: 3,
                 }}
                 variant="primary"
@@ -37,19 +37,19 @@ export function TabArticulos({ route, navigation }) {
                 <Tab.Item
                     title="StockTaking"
                     titleStyle={{ fontSize: 12 }}
-                    icon={{ name: 'inventory', type: 'material-icons', color: 'white' }}
+                    icon={{ name: 'inventory', type: 'material-icons', color: '#fff' }}
                     onPressIn={() => { setIconoBuscarArticulos(false); setActivarBuscadorArticulos(false) }}
                 />
                 <Tab.Item
                     title="Series/Lotes"
                     titleStyle={{ fontSize: 12 }}
-                    icon={{ name: 'list', type: 'material-icons', color: 'white' }}
+                    icon={{ name: 'list', type: 'material-icons', color: '#fff' }}
                     onPressIn={() => { }}
                 />
                 <Tab.Item
                     title="Stock"
                     titleStyle={{ fontSize: 12 }}
-                    icon={{ name: 'list', type: 'material-icons', color: 'white' }}
+                    icon={{ name: 'list', type: 'material-icons', color: '#fff' }}
                     onPressIn={() => { getArticulos(route.params.docEntry); setIconoBuscarArticulos(true) }}
                 />
             </Tab>

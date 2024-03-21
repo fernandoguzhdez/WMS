@@ -12,7 +12,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 
 export function SolicitudTransferencia({ navigation }) {
 
-    const { url, tokenInfo, setIsLoading, isLoading, getAlmacenes, setIdCodeSL, setSerieLoteTransfer } = useContext(AuthContext);
+    const { url, tokenInfo, setIsLoading, isLoading, getAlmacenes, setIdCodeSL, setSerieLoteTransfer, enviarTransferencia } = useContext(AuthContext);
     const [tablaSolicitudTransfer, setTablaSolicitudTransfer] = useState([]);
     const [filteredDataSource, setFilteredDataSource] = useState([]);
     const [isModalVisible, setModalVisible] = useState(false);
@@ -21,7 +21,7 @@ export function SolicitudTransferencia({ navigation }) {
     };
     const [activarBuscadorSolicitudT, setActivarBuscadorSolicitudT] = useState(true);
     const [searchSolicitudT, setSearchSolicitudT] = useState(null);
-    const [swipe, setSwipe] = useState(-100);
+    const [swipe, setSwipe] = useState(-150);
 
     useEffect(() => {
         getAlmacenes();
@@ -67,33 +67,6 @@ export function SolicitudTransferencia({ navigation }) {
             setSearchSolicitudT(text);
         }
     };
-
-    const cerrarDocumento = async (docEntry) => {
-        console.log('Este es el docEntry...', docEntry)
-        const headers = {
-            Accept: "application/json",
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${tokenInfo.token}`
-        };
-        // Make GET request
-        await axios.post(`${url}/api/SolTransferStock/Close?IdCounted=${docEntry}`,
-            {
-                docEntry
-            },
-            { headers }
-        ).then(response => {
-            console.log('Respuesta...', response.status)
-            setFilteredDataSource([])
-            setTablaSolicitudTransfer([])
-            getAlmacenes();
-            getDocuments()
-            setIsLoading(false)
-        })
-            .catch(error => {
-                setIsLoading(false)
-                console.log('Error al cerrar',error.message)
-            });
-    }
 
     const ItemView = ({ item }) => {
         return (
@@ -163,30 +136,30 @@ export function SolicitudTransferencia({ navigation }) {
                             <Button
                                 buttonStyle={{ ...styles.rowBackButtonEliminar, display: data.item.status == 'C' ? 'none' : 'flex' }}
                                 onPress={() => {
-                                    Alert.alert('Info', '¿Estas seguro de cerrar el documento?', [
+                                    Alert.alert('Info', '¿Estas seguro de continuar con la transferencia?', [
                                         {
                                             text: 'Cancelar',
                                             onPress: () => console.log('Cancel Pressed'),
                                             style: 'cancel',
                                         },
                                         {
-                                            text: 'Cerrar', onPress: () => {
-                                                cerrarDocumento(data.item.docEntry);
+                                            text: 'Enviar', onPress: () => {
+                                                enviarTransferencia(data.item.docEntry);
                                                 setIsLoading(true);
                                             }
                                         },
                                     ]);
                                 }}
-                                icon={
+                                /* icon={
                                     <Icon
                                         reverse
                                         name="trash"
                                         size={20}
                                         color="#fff"
                                     />
-                                }
+                                } */
                                 iconTop
-                                title="Cerrar"
+                                title="Transferir"
                             />
                         </View>
                     )}
@@ -236,7 +209,7 @@ const styles = StyleSheet.create({
     },
     rowBackButtonEliminar: {
         backgroundColor: '#ff0000',
-        width: 100,
+        width: 150,
         height: 90,
         textAlign: 'center',
         justifyContent: 'center',

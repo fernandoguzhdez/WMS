@@ -74,8 +74,8 @@ export function ConteoInventario({ navigation }) {
             }
           </View>
           <View style={{ height: 90, width: '15%', alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'row' }}>
-            <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', left: 20 }} size={50} color='lightgray' />
-            <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', right: 10 }} size={50} color='gray' />
+            <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', left: 20 }} size={50} color='#D3D3D3' />
+            <FontAwesomeIcon icon={faChevronRight} style={{ color: '#fff', right: 10 }} size={50} color='#D3D3D3' />
           </View>
         </View>
       </TouchableHighlight>
@@ -85,7 +85,7 @@ export function ConteoInventario({ navigation }) {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Spinner visible={isLoading} size={60} color='#ffff' />
-      <Spinner visible={isLoadingCerrarConteo} size={60} color='white' />
+      <Spinner visible={isLoadingCerrarConteo} size={60} color='#fff' />
       <View style={styles.container}>
         {activarBuscadorConteoInv != false ?
           <SearchBar
@@ -130,7 +130,7 @@ export function ConteoInventario({ navigation }) {
                     reverse
                     name="trash"
                     size={20}
-                    color="white"
+                    color="#fff"
                   />
                 }
                 iconTop
@@ -149,7 +149,7 @@ export function ConteoInventario({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
   },
   itemStyle: {
     padding: 10,
@@ -172,8 +172,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   badge: {
-    backgroundColor: 'blue',
-    color: 'black',
+    backgroundColor: '#000ff',
+    color: '#000',
     fontSize: 24,
   },
   rowBack: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   rowBackButtonCancelar: {
-    backgroundColor: 'blue',
+    backgroundColor: '#000ff',
     width: 100,
     height: 90,
     textAlign: 'center',
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   rowBackButtonEliminar: {
-    backgroundColor: 'red',
+    backgroundColor: '#ff0000',
     width: 100,
     height: 90,
     textAlign: 'center',

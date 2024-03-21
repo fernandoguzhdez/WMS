@@ -1,6 +1,6 @@
 import { SelectList } from 'react-native-dropdown-select-list'
 import React, { useMemo, useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Alert, useWindowDimensions } from 'react-native';
 import { Input, Card } from '@rneui/themed';
 import { Button } from 'react-native-elements'
 import { Icon } from 'react-native-elements'
@@ -12,9 +12,11 @@ import axios from 'axios';
 
 export function TomaInventario(props) {
 
-  const { filtrarBarcode, setIsLoading, searchBarcode, getAlmacenes, almacenes, obtenerUbicacionAlmacen, ubicacionItem, articulo, isLoading, setIsLoadingItems, 
-    setSearchBarcode, setArticulo, url, tokenInfo, filtrarArticulo, selectedAlmacen, setSelectedAlmacen, setSelectedUbicacion, selectedUbicacion, setModuloScan, 
+  const { filtrarBarcode, setIsLoading, searchBarcode, getAlmacenes, almacenes, obtenerUbicacionAlmacen, ubicacionItem, articulo, isLoading, setIsLoadingItems,
+    setSearchBarcode, setArticulo, url, tokenInfo, filtrarArticulo, selectedAlmacen, setSelectedAlmacen, setSelectedUbicacion, selectedUbicacion, setModuloScan,
     contadorClic, setContadorClic } = useContext(AuthContext);
+
+  const windowsWidth = useWindowDimensions().width;
   const [code, setCode] = useState('');
   const [cantidad, setCantidad] = useState('0');
   const navigation = useNavigation();
@@ -171,11 +173,10 @@ export function TomaInventario(props) {
                 onPress={() => {
                   setContadorClic(true)
                   filtrarArticulo(props, searchBarcode);
-                  setIsLoading(true)
                 }} />}
             placeholder='Escanea o ingresa el Codigo'
             value={searchBarcode}
-            onChangeText={text => setSearchBarcode(text)}
+            onChangeText={text => text == '' ? setSearchBarcode(null) : setSearchBarcode(text.toLocaleUpperCase())}
             onSubmitEditing={handeSubmit}
             style={{ margin: 5, fontSize: 18, color: '#000' }}
           />
@@ -230,14 +231,14 @@ export function TomaInventario(props) {
           /> */}
           <Button
             disabled={gestionItem != 'I' ? true : false}
-            buttonStyle={{ backgroundColor: 'green' }}
+            buttonStyle={{ backgroundColor: '#008000' }}
             onPress={() => guardarConteo()}
             icon={
               <Icon
                 name="save"
                 type='material-icons'
                 size={30}
-                color="white"
+                color="#fff"
                 iconStyle={{ paddingHorizontal: 10 }}
               />
             }
@@ -245,39 +246,41 @@ export function TomaInventario(props) {
           />
         </View>
         {articulo.length == undefined ?
-          <View style={{ marginTop: 30, flexWrap: 'wrap', alignSelf: 'center' }}>
-            <Card>
-              <Card.Title style={{ fontSize: 24 }}>Articulo Encontrado</Card.Title>
+          <View style={{ marginTop: 40, flexWrap: 'wrap', alignSelf: 'center' }}>
+            <Card style={{ ...styles.card, width: windowsWidth > 500 ? 350 : 300 }}>
+              <View style={styles.header}>
+                <Text style={styles.title}>{itemCode}</Text>
+              </View>
               <Card.Divider />
               <View style={{ flexDirection: 'column', justifyContent: 'space-around', alignItems: 'flex-start', alignSelf: 'center' }}>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>DocEntry:</Text> {docEntry}
+                <Text style={styles.content}>
+                  <Text style={styles.content}>DocEntry:</Text> {docEntry}
                 </Text>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>LineNum:</Text> {lineNum}
+                <Text style={styles.content}>
+                  <Text style={styles.content}>LineNum:</Text> {lineNum}
                 </Text>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Item Code:</Text> {itemCode}
+                {/* <Text style={styles.content}>
+                  <Text style={styles.content}>Item Code:</Text> {itemCode}
                 </Text>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>BarCode:</Text> {barCode}
+                <Text style={styles.content}>
+                  <Text style={styles.content}>BarCode:</Text> {barCode}
+                </Text> */}
+                <Text style={styles.content}>
+                  <Text style={styles.content}>Description:</Text> {itemDesc}
                 </Text>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Description:</Text> {itemDesc}
+                <Text style={styles.content}>
+                  <Text style={styles.content}>Gestion Item:</Text> {gestionItem}
                 </Text>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Gestion Item:</Text> {gestionItem}
+                <Text style={styles.content}>
+                  <Text style={styles.content}>Stock:</Text> {whsCode}
                 </Text>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Stock:</Text> {whsCode}
-                </Text>
-                <Text style={{ fontSize: 22 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Ubicacion:</Text> {binEntry}
+                <Text style={styles.content}>
+                  <Text style={styles.content}>Ubicacion:</Text> {binEntry}
                 </Text>
               </View>
               <View style={{ alignItems: 'center', marginTop: 30 }}>
-                <Text style={{ fontSize: 30 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Qty.</Text> {countQty} Pz.
+                <Text style={styles.content}>
+                  <Text style={styles.content}>Qty.</Text> {countQty} Pz.
                 </Text>
               </View>
             </Card>
@@ -302,5 +305,54 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 10,
     margin: 10,
+  },
+  card: {
+    height: 'auto',
+    margin: '3.5%', // Ajusta el margen entre las tarjetas
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
+    justifyContent: 'space-between'
+  },
+  content: {
+    fontSize: 24,
+    color: '#9b9b9b',
+    margin: 5
+  },
+  header: {
+    backgroundColor: '#3b5998',
+    marginHorizontal: 20,
+    padding: 20,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderBottomLeftRadius: 3,
+    borderBottomRightRadius: 3,
+    bottom: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 15,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 26
   }
 });

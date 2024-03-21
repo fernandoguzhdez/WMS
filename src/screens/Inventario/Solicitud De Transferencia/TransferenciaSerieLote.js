@@ -31,9 +31,9 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
     const from = page * itemsPerPage;
     const to = Math.min((page + 1) * itemsPerPage, tablaSeriesLotesTransfer.length);
 
-    useEffect(()=> {
+    useEffect(() => {
         limpiarVariables()
-    },[])
+    }, [])
 
     const limpiarVariables = () => {
         /* const unsubscribe = navigation.addListener('beforeRemove', () => {
@@ -221,41 +221,41 @@ export const TransferenciaSerieLote = ({ navigation, route }) => {
                     <ScrollView>
                         <DataTable>
                             <DataTable.Header style={{ backgroundColor: '#00913f' }}>
-                                <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>{gestionItem == 'S' ? 'N° Serie' : 'N° Lote'}</DataTable.Title>
-                                <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>A. origen</DataTable.Title>
-                                <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>A. destino</DataTable.Title>
-                                <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>Cantidad</DataTable.Title>
-                                <DataTable.Title textStyle={{ ...styles.titleTable, fontSize: windowsWidth > 500 ? 20 : 16 }}>Accion</DataTable.Title>
+                                <DataTable.Title textStyle={styles.cellTitle} style={styles.cellContent}>{gestionItem == 'S' ? 'N° Serie' : 'N° Lote'}</DataTable.Title>
+                                <DataTable.Title textStyle={styles.cellTitle} style={[styles.cellContent, styles.numericCell]}>A. origen</DataTable.Title>
+                                <DataTable.Title textStyle={styles.cellTitle} style={[styles.cellContent, styles.numericCell]}>A. destino</DataTable.Title>
+                                <DataTable.Title textStyle={styles.cellTitle} style={[styles.cellContent, styles.numericCell]}>Cantidad</DataTable.Title>
+                                <DataTable.Title textStyle={styles.cellTitle} style={[styles.cellContent, styles.numericCell]}>Accion</DataTable.Title>
                             </DataTable.Header>
 
                             {tablaSeriesLotesTransfer.slice(from, to).map((item, index) => (
                                 <DataTable.Row key={index}>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.idCode}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.FromWhsCode}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.ToWhsCode}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>{item.quantityCounted}</DataTable.Cell>
-                                    <DataTable.Cell textStyle={{ fontSize: windowsWidth > 500 ? 28 : 18, color: '#000' }}>
-                                        <Icon
-                                            name='trash'
-                                            disabledStyle={{ backgroundColor: '#ffff' }}
-                                            iconStyle={{ color: '#FF0000' }}
-                                            size={windowsWidth > 500 ? 35 : 20}
-                                            type='font-awesome'
-                                            containerStyle={{ paddingHorizontal: 5 }}
-                                            onPress={() => {
-                                                Alert.alert('Advertencia', '¿Estas seguro de eliminar el elemento seleccionado?', [
-                                                    {
-                                                        text: 'Cancelar',
-                                                        onPress: () => console.log('Cancel Pressed'),
-                                                        style: 'cancel',
-                                                    },
-                                                    {
-                                                        text: 'Eliminar', onPress: () => {
-                                                            eliminarSerieLoteTransfer(index)
-                                                        }
-                                                    },
-                                                ]);
-                                            }} />
+                                    <DataTable.Cell textStyle={{ fontSize: 22, flex: 1, flexWrap: 'wrap', minHeight: 60 }} style={styles.cellContent}><View><Text style={styles.cellContent}>{item.idCode}</Text></View></DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: 22, flex: 1, flexWrap: 'wrap', minHeight: 60 }} style={{ maxWidth: 120, justifyContent: 'flex-start', alignItems: 'center' }}><View><Text style={styles.cellContent}>{item.FromWhsCode}</Text></View></DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: 22, flex: 1, flexWrap: 'wrap', minHeight: 60 }} style={{ maxWidth: 120, justifyContent: 'flex-start', alignItems: 'center' }}><View><Text style={styles.cellContent}>{item.ToWhsCode}</Text></View></DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: 22, flex: 1, flexWrap: 'wrap', minHeight: 60 }} style={{ maxWidth: 120, justifyContent: 'flex-start', alignItems: 'center' }}><View><Text style={styles.cellContent}>{item.quantityCounted}</Text></View></DataTable.Cell>
+                                    <DataTable.Cell textStyle={{ fontSize: 22, flex: 1, flexWrap: 'wrap', minHeight: 60 }} style={{ maxWidth: 120, justifyContent: 'flex-start', alignItems: 'center' }}><View><Text style={styles.cellContent}><Icon
+                                        name='trash'
+                                        disabledStyle={{ backgroundColor: '#ffff' }}
+                                        iconStyle={{ color: '#FF0000' }}
+                                        size={windowsWidth > 500 ? 35 : 20}
+                                        type='font-awesome'
+                                        containerStyle={{ paddingHorizontal: 5 }}
+                                        onPress={() => {
+                                            Alert.alert('Advertencia', '¿Estas seguro de eliminar el elemento seleccionado?', [
+                                                {
+                                                    text: 'Cancelar',
+                                                    onPress: () => console.log('Cancel Pressed'),
+                                                    style: 'cancel',
+                                                },
+                                                {
+                                                    text: 'Eliminar', onPress: () => {
+                                                        eliminarSerieLoteTransfer(index)
+                                                    }
+                                                },
+                                            ]);
+                                        }} /></Text></View>
+
                                     </DataTable.Cell>
                                 </DataTable.Row>
                             ))}
@@ -449,5 +449,25 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         fontFamily: 'Georgia',
         textDecorationColor: '#3b5998',
+    }, cellContent: {
+        flex: 1,
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        margin: 5,
+        fontSize: 22,
+        color: '#000',
+        minHeight: 60
+    },
+    cellTitle: {
+        color: '#fff',
+        fontSize: 22,
+        fontWeight: 'bold'
+    },
+    numericTitle: {
+        maxWidth: 120,
+    },
+    numericCell: {
+        maxWidth: 120,
+        justifyContent: 'flex-start',
     }
 });
