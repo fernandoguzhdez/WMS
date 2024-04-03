@@ -14,7 +14,7 @@ export function TomaInventario(props) {
 
   const { filtrarBarcode, setIsLoading, searchBarcode, getAlmacenes, almacenes, obtenerUbicacionAlmacen, ubicacionItem, articulo, isLoading, setIsLoadingItems,
     setSearchBarcode, setArticulo, url, tokenInfo, filtrarArticulo, selectedAlmacen, setSelectedAlmacen, setSelectedUbicacion, selectedUbicacion, setModuloScan,
-    contadorClic, setContadorClic } = useContext(AuthContext);
+    contadorClic, setContadorClic, guardarConteoArticulo, splitCadenaEscaner } = useContext(AuthContext);
 
   const windowsWidth = useWindowDimensions().width;
   const [code, setCode] = useState('');
@@ -69,7 +69,7 @@ export function TomaInventario(props) {
     }
     axios
       .put(`${url}/api/InventoryCount/Update_CountInventory`, bodyParams, { headers })
-      .then((response) => {
+      .then(response => {
         console.log('Contando...', response.data);
         Toast.show({
           type: 'success',
@@ -120,7 +120,7 @@ export function TomaInventario(props) {
   }
 
   const handeSubmit = () => {
-    console.log('Enter...')
+    splitCadenaEscaner(searchBarcode, props, 'EnterConteoArticulo')
   }
 
   return (
@@ -172,7 +172,7 @@ export function TomaInventario(props) {
                 disabled={contadorClic}
                 onPress={() => {
                   setContadorClic(true)
-                  filtrarArticulo(props, searchBarcode);
+                  filtrarArticulo(props, searchBarcode, selectedAlmacen, selectedUbicacion);
                 }} />}
             placeholder='Escanea o ingresa el Codigo'
             value={searchBarcode}
@@ -232,7 +232,7 @@ export function TomaInventario(props) {
           <Button
             disabled={gestionItem != 'I' ? true : false}
             buttonStyle={{ backgroundColor: '#008000' }}
-            onPress={() => guardarConteo()}
+            onPress={() => guardarConteoArticulo(cantidad, props)}
             icon={
               <Icon
                 name="save"

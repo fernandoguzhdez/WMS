@@ -20,7 +20,7 @@ import axios from 'axios';
 export function ConteoInventario({ navigation }) {
 
   const { filteredDataSource, searchFilterFunction, search, activarBuscadorConteoInv, setActivarBuscadorConteoInv, LimpiarPantallaConteoInventario, setActivarBuscadorArticulos, 
-    url, tokenInfo, getInventario, setIsLoadingCerrarConteo, isLoadingCerrarConteo, setIsLoading, isLoading } = useContext(AuthContext);
+    url, tokenInfo, getInventario, setIsLoadingCerrarConteo, isLoadingCerrarConteo, setIsLoading, isLoading, getArticulos } = useContext(AuthContext);
   const [swipe, setSwipe] = useState(-100);
   const [deshabilitarBoton, setDeshabilitarBoton] = useState(false);
 
@@ -50,7 +50,7 @@ export function ConteoInventario({ navigation }) {
   const ItemView = ({ item }) => {
     return (
       // Flat List Item
-      <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry} onPress={() => { navigation.navigate('TabArticulos', item); setActivarBuscadorConteoInv(false); setActivarBuscadorArticulos(false); LimpiarPantallaConteoInventario() }} >
+      <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry} onPress={() => { getArticulos(item.docEntry); navigation.navigate('Articulos'); setActivarBuscadorConteoInv(false); setActivarBuscadorArticulos(false); LimpiarPantallaConteoInventario() }} >
         <View style={{ backgroundColor: '#3b5998', opacity: item.status == 'C' ? 0.4 : 1, justifyContent: 'space-around', flexDirection: 'row' }}  >
           <View style={styles.itemTexto}>
             <Text style={{ ...styles.texto, fontSize: 20 }}>
@@ -138,7 +138,7 @@ export function ConteoInventario({ navigation }) {
               />
             </View>
           )}
-          rightOpenValue={200}
+          rightOpenValue={swipe}
           stopLeftSwipe={-1}
         />
 

@@ -14,6 +14,7 @@ import { ItemsTransferencia } from '../screens/Inventario/Solicitud De Transfere
 import { ListadoItemsTransfer } from '../screens/Inventario/Solicitud De Transferencia/ListadoItemsTransfer';
 import { ListadoSeriesLotes } from '../screens/Inventario/Solicitud De Transferencia/ListadoSeriesLotes';
 import { Articulos } from '../screens/Inventario/Conteo De Inventario/Articulos';
+import { SeriesLotes } from '../screens/Inventario/Conteo De Inventario/SeriesLotes';
 import { Scanner } from '../componentes/Scanner';
 import { TabArticulos } from '../screens/Inventario/Conteo De Inventario/TabArticulos';
 import { IconButton, MD3Colors } from 'react-native-paper';
@@ -64,6 +65,9 @@ export function Navigation() {
                 <Stack.Screen name="SolicitudTransferencia" component={SolicitudTransferencia} options={{ headerShown: true, title: 'Solicitud de transferencia', }} />
                 <Stack.Screen name="Articulos" component={Articulos} options={{
                     headerShown: true, title: 'Articulos'
+                }} />
+                <Stack.Screen name="SeriesLotes" component={SeriesLotes} options={{
+                    headerShown: true, title: 'SeriesLotes'
                 }} />
                 <Stack.Screen name="Scanner" component={Scanner} options={{ headerShown: true, title: 'Scanner' }} />
                 <Stack.Screen name="TabArticulos" component={TabArticulos}

@@ -25,11 +25,14 @@ export const AuthProvider = ({ children }) => {
     const [filteredDataSource, setFilteredDataSource] = useState([]);
     const [masterDataSource, setMasterDataSource] = useState([]);
     //Variables para el buscador de articulos
+    const [isModalInvArticulos, setIsModalInvArticulos] = useState(false)
     const [searchArticulos, setSearchArticulos] = useState('');
     const [filteredDataSourceArticulos, setFilteredDataSourceArticulos] = useState([]);
     const [masterDataSourceArticulos, setMasterDataSourceArticulos] = useState([]);
     const [articulos, setArticulos] = useState([]);
+    const [isModalInvSeriesLotes, setIsModalInvSeriesLotes] = useState(false)
     //Variables para buscar barcode al escanear o ingresar codigo
+    const [valueFilterInvArticulos, setValueFilterInvArticulos] = useState(null)
     const [searchBarcode, setSearchBarcode] = useState(null);
     const [inputScannerTI, setInputScannerTI] = useState(0);
     //Variables para traer los almacenes
@@ -158,6 +161,16 @@ export const AuthProvider = ({ children }) => {
                 //setIdCodeSL(partes)
                 console.log('idCode', partes)
                 break;
+            case 'EnterConteoArticulo':
+                if (partes.length == 3) {
+                    filtrarArticulo(dato2, partes[0], partes[1], partes[2])
+                    setSelectedAlmacen(partes[1])
+                    setSelectedUbicacion(partes[2])
+                } else {
+                    console.log('Conteo de series y lotes...')
+                }
+                break;
+
             default:
                 break;
         }
@@ -360,6 +373,102 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const FilterInventarioArticulos = (text) => {
+        console.log('buscando articulo en conteo...', text)
+        // Check if searched text is not blank
+        if (text) {
+            setFilteredDataSourceArticulos(
+                masterDataSourceArticulos.filter((item) =>
+                    item.itemCode.toUpperCase().includes(text.toUpperCase()) ||
+                    item.itemDesc.toUpperCase().includes(text.toUpperCase()) ||
+                    item.whsCode.toUpperCase().includes(text.toUpperCase())
+                )
+            );
+        } else {
+            // Inserted text is blank
+            // Update FilteredDataSource with tablaSolicitudTransfer
+            setFilteredDataSourceArticulos(masterDataSourceArticulos)
+        }
+    };
+
+    const FilterInventarioSeriesLotes = (text) => {
+        console.log('buscando series/lotes en conteo...', text)
+        console.log('Series', serialsLotes)
+        console.log('Lotes', lotes)
+
+        // Check if searched text is not blank
+        if (text) {
+            setSerialsLotes(
+                serialsLotes.filter((item) =>
+                    item.idCode.toUpperCase().includes(text.toUpperCase())
+                )
+            );
+        } else {
+            // Inserted text is blank
+            // Update FilteredDataSource with tablaSolicitudTransfer
+            setSerialsLotes(lotes)
+        }
+    }
+
+
+    const guardarConteoArticulo = async (cantidad, props) => {
+        const { docEntry, lineNum, itemCode, barCode, itemDesc, gestionItem, whsCode, totalQty, countQty, counted, binEntry, binCode } = articulo;
+        console.log('Datos del articulo...', docEntry)
+        setIsLoading(true)
+        const bodyParams = {
+            "docEntry": docEntry,
+            "Items": [
+                {
+                    "DocEntry": docEntry,
+                    "LineNum": lineNum,
+                    "ItemCode": itemCode,
+                    "BarCode": barCode,
+                    "ItemDesc": itemDesc,
+                    "GestionItem": gestionItem,
+                    "WhsCode": whsCode,
+                    "totalQty": totalQty,
+                    "QuantityCounted": cantidad,
+                    "BinEntry": binEntry,
+                    "BinCode": binCode,
+                    "SerialandManbach": []
+                }
+            ]
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        }
+        await axios.put(`${url}/api/InventoryCount/Update_CountInventory`, bodyParams, { headers })
+            .then(response => {
+                console.log('Contando...', response.data);
+                /* Toast.show({
+                    type: 'success',
+                    // And I can pass any custom props I want
+                    text1: 'Info',
+                    text2: 'Conteo agregado exitosamente!!!'
+                }); */
+
+
+                setIsLoading(false)
+                Alert.alert('Info', 'Conteo actualizado exitosamente!!!', [
+                    {
+                        text: 'OK', onPress: () => {
+                            getArticulos(docEntry)
+                            setIsModalInvArticulos(!isModalInvArticulos)
+                        }
+                    },
+                ]);
+            })
+            .catch(error => {
+                setIsLoading(false)
+                console.log('Error al actualizar item...', error)
+                Alert.alert('Advertencia', 'Error al actualizar item...', [
+                    { text: 'OK', onPress: () => { } },
+                ]);
+            })
+    }
+
     //Funciones para traer los articulos
     const getArticulos = async (docEntry) => {
         setFilteredDataSourceArticulos([])
@@ -376,6 +485,7 @@ export const AuthProvider = ({ children }) => {
                 setArticulos(articulos);
                 setFilteredDataSourceArticulos(response.data.oinc[0].items);
                 setMasterDataSourceArticulos(response.data.oinc[0].items);
+                console.log('obteniendo articulos...', articulos)
             })
             .catch(error => {
                 console.error('No hay articulos aqui', error);
@@ -564,7 +674,12 @@ export const AuthProvider = ({ children }) => {
             .then((response) => {
                 setIsLoading(false)
                 Alert.alert('Info', 'Conteo guardado con exito!!!', [
-                    { text: 'OK', onPress: () => cargarTablaLotes(articulo.docEntry, articulo.lineNum, articulo.itemCode, articulo.gestionItem) },
+                    {
+                        text: 'OK', onPress: () => {
+                            cargarTablaLotes(articulo.docEntry, articulo.lineNum, articulo.itemCode, articulo.gestionItem)
+                            setTextSerie(null)
+                        }
+                    },
                 ]);
             })
             .catch(error => {
@@ -615,7 +730,13 @@ export const AuthProvider = ({ children }) => {
             .then((response) => {
                 setIsLoading(false)
                 Alert.alert('Info', 'Conteo guardado con exito!!!', [
-                    { text: 'OK', onPress: () => cargarTablaLotes(articulo.docEntry, articulo.lineNum, articulo.itemCode, articulo.gestionItem) },
+                    {
+                        text: 'OK', onPress: () => {
+                            cargarTablaLotes(articulo.docEntry, articulo.lineNum, articulo.itemCode, articulo.gestionItem);
+                            setIsModalInvSeriesLotes(!isModalInvSeriesLotes)
+                            setTextSerie(null)
+                        }
+                    },
                 ]);
             })
             .catch(error => {
@@ -661,7 +782,8 @@ export const AuthProvider = ({ children }) => {
             });
     }
 
-    const verificarEscaneoSerie = async (docEntry, lineNum, itemCode, gestionItem, textSerie) => {
+    const verificarEscaneoSerie = async (docEntry, lineNum, itemCode, gestionItem, textSerie, whsCode, binEntry, binCode, barcode, itemDesc, totalQty, countQty) => {
+        console.log('Parametros para verificar serie/lote.....', docEntry, lineNum, itemCode, gestionItem, textSerie, whsCode, binEntry)
         let textSerieVerificada = null;
         let arraySer = [];
         // Set headers
@@ -675,8 +797,9 @@ export const AuthProvider = ({ children }) => {
                 arraySer = response.data.SerialxManbach;
                 if (arraySer != undefined) {
                     arraySer.map((item) => {
-                        if (item.idCode == textSerie) {
+                        if (item.idCode.toUpperCase() == textSerie.toUpperCase()) {
                             textSerieVerificada = item.idCode;
+                            console.log('text verificada...', textSerieVerificada);
                         }
                     })
                 }
@@ -688,20 +811,21 @@ export const AuthProvider = ({ children }) => {
             });
 
         if (textSerieVerificada == null) {
-            filtrarSerie(textSerie, arraySer);
+            filtrarSerie(textSerie, arraySer, itemCode, gestionItem, whsCode, binEntry, lineNum, binCode, docEntry, barcode, itemDesc, totalQty, countQty)
             loading();
         } else {
             setIsLoading(false)
             Alert.alert('Advertencia', 'Serie escaneada previamente!!!', [
-                { text: 'OK', onPress: () => { textSerieVerificada = null; setContadorClic(false) } },
+                { text: 'OK', onPress: () => { textSerieVerificada = null; setContadorClic(false); setTextSerie(null) } },
             ]);
             //filtrarSerie(textSerie); loading()
         }
 
     }
 
-    const verificarLote = async (textSerie, modoBusqueda) => {
-        const { gestionItem, itemCode, whsCode, binEntry } = articulo;
+    const verificarLote = async (textSerie, modoBusqueda, itemCode, gestionItem, whsCode, binEntry) => {
+        //const { gestionItem, itemCode, whsCode, binEntry } = articulo;
+        console.log('IDCODE....', textSerie, gestionItem, itemCode, whsCode, binEntry)
         let sysNumber = null;
         setLote([])
         // Set headers
@@ -724,7 +848,8 @@ export const AuthProvider = ({ children }) => {
             setContadorClic(false)
             setIsLoading(false)
             response.data.serialxManbach.map((item) => {
-                if (item.idCode === textSerie) {
+                if (item.idCode.toUpperCase() === textSerie.toUpperCase()) {
+                    setIsModalInvSeriesLotes(!isModalInvSeriesLotes)
                     setLote(item)
                     setCantidadSerieLote(1)
                     virificadorLote = 1;
@@ -734,6 +859,7 @@ export const AuthProvider = ({ children }) => {
             if (virificadorLote == 0) {
                 setContadorClic(false)
                 setIsLoading(false)
+                setTextSerie(null)
                 Alert.alert('Advertencia', 'No existe el lote', [
                     { text: 'OK' },
                 ]);
@@ -746,17 +872,18 @@ export const AuthProvider = ({ children }) => {
             .catch(error => {
                 setContadorClic(false)
                 setIsLoading(false)
+                setTextSerie(null)
                 Alert.alert('Advertencia', 'No existe el lote', [
                     { text: 'OK' },
                 ]);
             });
     }
 
-    const filtrarSerie = async (textSerie, arrayRemoto) => {
+    const filtrarSerie = async (textSerie, arrayRemoto, itemCode, gestionItem, whsCode, binEntry, lineNum, binCode, docEntry, barCode, itemDesc, totalQty, countQty) => {
         contadorSerie = 0;
         arrayRemoto2.push(arrayRemoto || []);
-        console.log('antes de enviarlo...', arrayRemoto2[0])
-        const { gestionItem, itemCode, whsCode, binEntry } = articulo;
+        //const { gestionItem, itemCode, whsCode, binEntry } = articulo;
+        console.log('imprimiendo articulo...', textSerie, gestionItem, itemCode, whsCode, binEntry)
         // Set headers
         const headers = {
             Accept: "application/json",
@@ -778,31 +905,33 @@ export const AuthProvider = ({ children }) => {
             let SysNumber = null;
             console.log('este es cuando valida si existe', response.data)
             response.data.serialxManbach.map((item) => {
-                console.log('este es cuando valida si existe', response.data)
-                if (item.idCode === textSerie) {
+                if (item.idCode.toUpperCase() == textSerie.toUpperCase()) {
+                    console.log('Son iguales', item.idCode, textSerie)
                     setSerialsLotes([...serialsLotes, item])
                     IdCode = item.idCode;
                     SysNumber = item.sysNumber;
                     contadorSerie = 1;
                     setIsLoading(false)
+                } else {
+                    console.log('no Son iguales', item.idCode, textSerie)
                 }
             })
             if (contadorSerie == 0) {
                 Alert.alert('Advertencia', 'No se encontro la serie', [
-                    { text: 'OK', onPress: () => { setContadorClic(false); setIsLoading(false) } },
+                    { text: 'OK', onPress: () => { setContadorClic(false); setIsLoading(false); setTextSerie(null) } },
                 ]);
             } else {
                 let arrayLocal = [{
-                    "baseLineNum": articulo.lineNum,
+                    "baseLineNum": lineNum,
                     "serManLineNum": 0,
-                    "gestionItem": articulo.gestionItem,
-                    "itemCode": articulo.itemCode,
+                    "gestionItem": gestionItem,
+                    "itemCode": itemCode,
                     "idCode": IdCode,
                     "sysNumber": SysNumber,
                     "quantityCounted": 1,
-                    "whsCode": articulo.whsCode,
-                    "binEntry": articulo.binEntry,
-                    "binCode": articulo.binCode,
+                    "whsCode": whsCode,
+                    "binEntry": binEntry,
+                    "binCode": binCode,
                     "updateDate": "2023-08-24T00:00:00",
                 }];
                 arrayRemoto2[0].push(arrayLocal[0])
@@ -814,26 +943,29 @@ export const AuthProvider = ({ children }) => {
                 };
                 axios
                     .put(`${url}/api/InventoryCount/Update_CountInventory`, {
-                        "docEntry": articulo.docEntry,
+                        "docEntry": docEntry,
                         "Items": [
                             {
-                                "DocEntry": articulo.docEntry,
-                                "LineNum": articulo.lineNum,
-                                "ItemCode": articulo.barCode,
-                                "BarCode": articulo.itemCode,
-                                "ItemDesc": articulo.itemDesc,
-                                "GestionItem": articulo.gestionItem,
-                                "WhsCode": articulo.whsCode,
-                                "totalQty": articulo.totalQty,
-                                "QuantityCounted": articulo.countQty,
-                                "BinEntry": articulo.binEntry,
-                                "BinCode": articulo.binCode,
+                                "DocEntry": docEntry,
+                                "LineNum": lineNum,
+                                "ItemCode": barCode,
+                                "BarCode": itemCode,
+                                "ItemDesc": itemDesc,
+                                "GestionItem": gestionItem,
+                                "WhsCode": whsCode,
+                                "totalQty": totalQty,
+                                "QuantityCounted": countQty,
+                                "BinEntry": binEntry,
+                                "BinCode": binCode,
                                 "serialandManbach": arrayRemoto2[0]
                             }
                         ]
                     }, { headers })
                     .then((response) => {
                         console.log('Respuesta de la DATA...', response.data)
+                        Alert.alert('Info', 'Serie agregada con exito!!!', [
+                            { text: 'OK', onPress: () => { cargarTablaLotes(docEntry, lineNum, itemCode, gestionItem), getArticulos(docEntry), setTextSerie(null) } },
+                        ]);
                         setContadorClic(false)
                     });
             }
@@ -841,13 +973,14 @@ export const AuthProvider = ({ children }) => {
             .catch(error => {
                 setIsLoading(false)
                 Alert.alert('Advertencia', 'No se encontro la serie', [
-                    { text: 'OK', onPress: () => { setContadorClic(false) } },
+                    { text: 'OK', onPress: () => { setContadorClic(false), setTextSerie(null) } },
                 ]);
             });
     }
 
     //FUNCION PARA FILTRAR ARTICULOS EN TOMA DE INVENTARIO
-    const filtrarArticulo = async (props, searchBarcode) => {
+    const filtrarArticulo = async (props, searchBarcode, selectedAlmacen, selectedUbicacion) => {
+        console.log('Parametros...', props, searchBarcode, selectedAlmacen, selectedUbicacion)
         setArticulo([])
         setLote([])
         setLotes([])
@@ -1406,7 +1539,7 @@ export const AuthProvider = ({ children }) => {
                 userInfo,
                 logOut,
                 getInventario,
-                inventario,
+                inventario, guardarConteoArticulo,
                 filteredDataSource, setFilteredDataSource,
                 setMasterDataSource, masterDataSource,
                 searchFilterFunction,
@@ -1429,8 +1562,8 @@ export const AuthProvider = ({ children }) => {
                 LimpiarPantallaConteoInventario,
                 setIconoBuscarArticulos, iconoBuscarArticulos,
                 setIndexTab, indexTab,
-                filtrarSerie, serialsLotes, setSerialsLotes, contadorSerie, setArraySeries, verificarEscaneoSerie, textSerie, setTextSerie, moduloScan, setModuloScan, lote, setLote, verificarLote, guardarConteoLote,
-                setIsLoadingItems, isLoadingItems, isLoadingCerrarConteo, setIsLoadingCerrarConteo, lotes, setLotes, cantidadSerieLote, setCantidadSerieLote, contadorClic, setContadorClic,
+                filtrarSerie, serialsLotes, setSerialsLotes, contadorSerie, setArraySeries, verificarEscaneoSerie, textSerie, setTextSerie, moduloScan, setModuloScan, lote, setLote, verificarLote, guardarConteoLote, setIsModalInvSeriesLotes, isModalInvSeriesLotes, FilterInventarioSeriesLotes,
+                setIsLoadingItems, isLoadingItems, isLoadingCerrarConteo, setIsLoadingCerrarConteo, lotes, setLotes, cantidadSerieLote, setCantidadSerieLote, contadorClic, setContadorClic, FilterInventarioArticulos, valueFilterInvArticulos, setValueFilterInvArticulos, isModalInvArticulos, setIsModalInvArticulos, cargarTablaLotes,
                 FiltrarArticulosTraslado, barcodeItemTraslados, setBarcodeItemTraslados, itemsTraslados, setItemsTraslados, tablaItemsTraslados, setTablaItemsTraslados, itemTraslado, setItemTraslado, getItemsTraslados, setSerieLoteTransfer, serieLoteTransfer, ComprobarSerieLoteTransfer, filterListaSeriesLotes, setFilterListaSeriesLotes,
                 searchFilterItemsTraslados, searchFilterItemsTrasladosEscan, enviarTransferencia, isModalTransferirSerieLote, setIsModalTransferirSerieLote, ActualizarSerieLoteTransfer, selectedUbicacionOri, setSelectedUbicacionOri, isModalUbicacion, setIsModalUbicacion, dataSerieLoteTransfer, setDataSerieLoteTransfer, cargarSeriesLotesDisp,
                 listaSeriesLotes, setListaSeriesLotes, isModalSerieLote, setIsModalSerieLote, selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes, ubicacionOri,
