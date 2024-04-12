@@ -189,7 +189,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                                 name="arrow-right"
                                 type='font-awesome'
                                 size={windowsWidth > 500 ? 20 : 10}
-                                color="#000"
+                                color="#b6b6b6"
                                 iconStyle={{ paddingHorizontal: 10 }}
                                 containerStyle={{ alignSelf: 'center' }}
                             />
@@ -206,7 +206,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                                 name="arrow-right"
                                 type='font-awesome'
                                 size={windowsWidth > 500 ? 20 : 10}
-                                color="#000"
+                                color="#b6b6b6"
                                 iconStyle={{ paddingHorizontal: 10 }}
                                 containerStyle={{ alignSelf: 'center' }}
                             />
@@ -216,7 +216,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ alignItems: 'center' }}>
-                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Contados</Text>
+                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Transferidos</Text>
                         <Text style={styles.content}>{item.countQty}</Text>
                     </View>
                     <View style={{ alignItems: 'center' }}>
@@ -226,7 +226,7 @@ export function ListadoItemsTransfer({ navigation, route }) {
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ alignItems: 'center' }}>
-                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Pendientes</Text>
+                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Por transferir</Text>
                         <Text style={styles.content}>{item.pendiente}</Text>
                     </View>
                 </View>
