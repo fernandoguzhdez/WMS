@@ -98,7 +98,13 @@ export const AuthProvider = ({ children }) => {
     const [searchDetalleInvSL, setSearchDetalleInvSL] = useState('');
     const [searchDetalleInv, setSearchDetalleInv] = useState('');
     const [dataCompleteDI, setDataCompleteDI] = useState([]);
-
+    //VARIABLES PARA EL MODULO DE PRODUCCION
+    const [dataArtProd, setDataArtProd] = useState([])
+    const [filterDataArtProd, setFilterDataArtProd] = useState([])
+    const [valueArtProd, setValueArtProd] = useState(null)
+    const [filterDataSLProd, setFilterDataSLProd] = useState([])
+    const [dataSLProd, setDataSLProd] = useState([])
+    const [valueSLProd, setValueSLProd] = useState(null)
 
 
     const splitCadenaEscaner = (dato1, dato2, modulo) => {
@@ -195,6 +201,7 @@ export const AuthProvider = ({ children }) => {
                 }
             })
             .catch(e => {
+                console.log(e.response);
                 Alert.alert('Posibles fallas', 'Conexion a internet, llena todos los campos, revisa que los datos ingresados sean correctos', [
                     { text: 'OK' },
                 ]);
@@ -1521,6 +1528,75 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    //METODOS PARA EL MODULO DE PRODUCCION
+    const tablaArtProd = async (docEntry) => {
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        await axios.get(`${url}/api/Production/Get_Details?IdDocumentCnt=${docEntry}`, { headers })
+            .then(response => {
+                setDataArtProd(response.data.owor[0].items)
+                setFilterDataArtProd(response.data.owor[0].items)
+            })
+            .catch(error => {
+                console.error('error', error);
+            });
+    }
+
+    const filterArtProd = (text) => {
+        if (text) {
+            setFilterDataArtProd(
+                dataArtProd.filter((item) =>
+                    item.itemCode.toUpperCase().includes(text.toUpperCase()) ||
+                    item.itemDesc.toUpperCase().includes(text.toUpperCase()) ||
+                    item.whsCode.toUpperCase().includes(text.toUpperCase())
+                )
+            );
+        } else {
+            setFilterDataArtProd(dataArtProd)
+        }
+    }
+
+    const tablaSLProd = async (item) => {
+        setDataSLProd([])
+        setFilterDataSLProd([])
+        setIsLoading(true)
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        await axios.get(`${url}/api/Production/Get_Disp_SerAndBatchs?ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}&WhsCode=${item.whsCode}&BinCode=${item.binCode}`, { headers })
+            .then(response => {
+                console.log('obteniendo series/lotes...', response.data.serialxManbach)
+                setDataSLProd(response.data.serialxManbach)
+                setFilterDataSLProd(response.data.serialxManbach)
+                setIsLoading(false)
+            })
+            .catch(error => {
+                console.error('error', error);
+                setIsLoading(false)
+            });
+    }
+
+    const FilterSLProd = (text) => {
+        if (text) {
+            setFilterDataSLProd(
+                dataSLProd.filter((item) =>
+                    item.idCode.toUpperCase().includes(text.toUpperCase()) ||
+                    item.lotDescrip.toUpperCase().includes(text.toUpperCase())
+                )
+            );
+        } else {
+            setFilterDataSLProd(dataSLProd)
+        }
+    }
+
+
     return (
         <AuthContext.Provider
             value={{
@@ -1569,7 +1645,9 @@ export const AuthProvider = ({ children }) => {
                 listaSeriesLotes, setListaSeriesLotes, isModalSerieLote, setIsModalSerieLote, selectedUbicacionDes, setSelectedUbicacionDes, tablaSeriesLotesTransfer, setTablaSeriesLotesTransfer, cargarTablaSeriesLotesTransfer, seEscaneo, setSeEscaneo, ubicacionOrigen, ubicacionOri, setUbicacionOri, ubicacionDes, setUbicacionDes, ubicacionOri,
                 setUbicacionOri, ubicacionDesOri, isEnter, setIsEnter, ubicacionDes, setUbicacionDes, masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
                 searchDetalleInvSL, setSearchDetalleInvSL, handleSearchDetalleInvSL, searchDetalleInv, setSearchDetalleInv, handleSearchDetalleInv, dataCompleteDI, setDataCompleteDI, fetchDataDetalleInv, splitCadenaEscaner,
-                idCodeSL, setIdCodeSL
+                idCodeSL, setIdCodeSL,
+                //VARIABLES DEL MODULO DE PRODUCCION
+                tablaArtProd, dataArtProd, filterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, dataSLProd, setDataSLProd, filterDataSLProd, setFilterDataSLProd, tablaSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd
             }}
         >
             {children}

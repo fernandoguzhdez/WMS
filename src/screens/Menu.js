@@ -22,7 +22,7 @@ export default function Menu({ navigation }) {
     const cardColor = generateCardColor(index);
     return (
       <View style={[styles.card, { backgroundColor: cardColor, width: windowsWidth > 500 ? (windowsWidth / 3) - 33 : (windowsWidth / 2) - 40 }]} >
-        <TouchableOpacity style={styles.middle} onPress={() => navigation.navigate(item.name, item)}>
+        <TouchableOpacity style={styles.middle} onPress={() => {console.log(item.name); navigation.navigate(item.name, item)}}>
           <Image
             source={{ uri: `${url}${item.icon}` }}
             style={styles.imagenes}

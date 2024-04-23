@@ -22,6 +22,10 @@ import { View } from 'react-native';
 import { TransferenciaSerieLote } from '../screens/Inventario/Solicitud De Transferencia/TransferenciaSerieLote';
 import { DetalleInventario } from '../screens/Inventario/Detalle Inventario/DetalleInventario';
 import { DetalleInventarioSL } from '../screens/Inventario/Detalle Inventario/DetalleInventarioSL';
+import { ArticulosProduccion } from '../screens/Produccion/Orden De Fabricacion/ArticulosProduccion';
+import { DocsOrdenDeFabricacion } from '../screens/Produccion/Orden De Fabricacion/DocsOrdenDeFabricacion';
+import { Produccion } from '../screens/Produccion/Produccion';
+import { SeriesLotesProduccion } from '../screens/Produccion/Orden De Fabricacion/SeriesLotesProduccion';
 
 const Stack = createNativeStackNavigator();
 
@@ -98,6 +102,10 @@ export function Navigation() {
                 <Stack.Screen name="TransferenciaSerieLote" component={TransferenciaSerieLote} options={{ headerShown: true, title: 'Captura de serie y lotes', }} />
                 <Stack.Screen name="DetalleInventario" component={DetalleInventario} options={{ headerShown: true, title: 'Detalle Inventario', }} />
                 <Stack.Screen name="DetalleInventarioSL" component={DetalleInventarioSL} options={{ headerShown: true, title: 'Detalle Inventario Series/Lotes', }} />
+                <Stack.Screen name="DocsOrdenDeFabricacion" component={DocsOrdenDeFabricacion} options={{ headerShown: true, title: 'Documentos', }} />
+                <Stack.Screen name="Produccion" component={Produccion} options={{ headerShown: true, title: 'Produccion', }} />
+                <Stack.Screen name="ArticulosProduccion" component={ArticulosProduccion} options={{ headerShown: true, title: 'Articulos', }} />
+                <Stack.Screen name="SeriesLotesProduccion" component={SeriesLotesProduccion} options={{ headerShown: true, title: 'Series/Lotes', }} />
             </Stack.Navigator>
         </NavigationContainer>
     );
