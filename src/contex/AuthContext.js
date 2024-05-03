@@ -105,6 +105,7 @@ export const AuthProvider = ({ children }) => {
     const [filterDataSLProd, setFilterDataSLProd] = useState([])
     const [dataSLProd, setDataSLProd] = useState([])
     const [valueSLProd, setValueSLProd] = useState(null)
+    const [isModalArtProd, setIsModalArtProd] = useState(false);
 
 
     const splitCadenaEscaner = (dato1, dato2, modulo) => {
@@ -1596,6 +1597,53 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const guardarOrdenProdArt = (item, cantidad) => {
+        // Set headers
+        const headers = {
+            Accept: "application/json",
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        axios
+            .put(`${url}/api/Production/Update`, {
+                "docEntry": item.docEntry,
+                "items": [
+                    {
+                        "docEntry": item.docEntry,
+                        "lineNum": item.lineNum,
+                        "itemCode": item.itemCode,
+                        "barCode": item.barCode,
+                        "itemDesc": item.itemDesc,
+                        "gestionItem": item.gestionItem,
+                        "whsCode": item.whsCode,
+                        "binEntry": item.binEntry,
+                        "binCode": item.binCode,
+                        "quantityCounted": cantidad,
+                        "serialandManbach": []
+                    }
+                ]
+            }, { headers })
+            .then((response) => {
+                console.log(response.data)
+                setIsLoading(false);
+                Alert.alert('Info', 'Orden de produccion actualizada!', [
+                    { text: 'OK', onPress: () => { } },
+                ]);
+            })
+            .catch(error => {
+                setIsLoading(false);
+                if (error.response) {
+                    console.log(error.response.status);
+                }
+                else if (error.request) {
+                    console.log(error.request);
+                }
+                else {
+                    console.log(error.message);
+                }
+            });
+    }
+
 
     return (
         <AuthContext.Provider
@@ -1647,7 +1695,7 @@ export const AuthProvider = ({ children }) => {
                 searchDetalleInvSL, setSearchDetalleInvSL, handleSearchDetalleInvSL, searchDetalleInv, setSearchDetalleInv, handleSearchDetalleInv, dataCompleteDI, setDataCompleteDI, fetchDataDetalleInv, splitCadenaEscaner,
                 idCodeSL, setIdCodeSL,
                 //VARIABLES DEL MODULO DE PRODUCCION
-                tablaArtProd, dataArtProd, filterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, dataSLProd, setDataSLProd, filterDataSLProd, setFilterDataSLProd, tablaSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd
+                tablaArtProd, dataArtProd, filterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, dataSLProd, setDataSLProd, filterDataSLProd, setFilterDataSLProd, tablaSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd, guardarOrdenProdArt, isModalArtProd, setIsModalArtProd
             }}
         >
             {children}

@@ -10,20 +10,11 @@ import Spinner from 'react-native-loading-spinner-overlay';
 
 export function ArticulosProduccion({ navigation, route }) {
 
-    const { url, tokenInfo, isLoading, tablaArtProd, dataArtProd, filterDataArtProd, valueArtProd, setValueArtProd, filterArtProd } = useContext(AuthContext);
+    const { url, tokenInfo, isLoading, tablaArtProd, dataArtProd, filterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, guardarOrdenProdArt, isModalArtProd, setIsModalArtProd } = useContext(AuthContext);
     const [cantidad, setCantidad] = useState('1');
     const windowsWidth = useWindowDimensions().width;
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [isModalSeriesLotes, setIsModalSeriesLotes] = useState(false);
-    const [selectedAlmacenOri, setSelectedAlmacenOri] = useState();
-    const [selectedUbicacionOri, setSelectedUbicacionOri] = useState();
-    const [selectedAlmacenDes, setSelectedAlmacenDes] = useState();
-    const [selectedUbicacionDes, setSelectedUbicacionDes] = useState();
-    const [ubicacionOri, setUbicacionOri] = useState();
-    const [ubicacionDes, setUbicacionDes] = useState();
     const [enableButton, setEnableButton] = useState(false);
-    const [searchItemsTraslados, setSearchItemsTraslados] = useState(null)
-    const [itemTrasladoSeleccionado, setItemTrasladoSeleccionado] = useState([])
+    const [itemSeleccionado, setItemSeleccionado] = useState([])
 
 
     useEffect(() => {
@@ -63,7 +54,7 @@ export function ArticulosProduccion({ navigation, route }) {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ alignItems: 'center' }}>
                         <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Contados</Text>
-                        <Text style={styles.content}>{item.countQty}</Text>
+                        <Text style={styles.content}>{item.counted}</Text>
                     </View>
                     <View style={{ alignItems: 'center' }}>
                         <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Total</Text>
@@ -120,8 +111,10 @@ export function ArticulosProduccion({ navigation, route }) {
                     <Card
                         item={item}
                         btnTitle={item.gestionItem == 'I' ? 'Seleccionar Articulo' : item.gestionItem == 'L' ? 'Ver Lotes' : 'Ver Series'}
-                        icono={item.gestionItem == 'I' ? 'exchange' : 'eye'}
+                        icono={item.gestionItem == 'I' ? 'arrows-alt' : 'eye'}
                         metodo={item.gestionItem == 'I' ? () => {
+                            setIsModalArtProd(!isModalArtProd)
+                            setItemSeleccionado(item)
                         } : () => {
                             navigation.navigate('SeriesLotesProduccion', item)
                             console.log(item)
@@ -132,57 +125,18 @@ export function ArticulosProduccion({ navigation, route }) {
                 contentContainerStyle={styles.flatListContent}
             />
 
-            {/* <Modal isVisible={isModalVisible} style={{}} animationInTiming={1000} >
+            <Modal isVisible={isModalArtProd} style={{}} animationInTiming={1000} >
                 <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15 }}>
-                    <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar ubicacion y cantidad</Text>
-                    <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar cantidad</Text>
+                    <View style={{ alignItems: 'center', marginVertical: 40 }}>
                         <Text style={styles.content}>
-                            {itemTraslado.itemCode}
+                            {itemSeleccionado.itemCode}
+                        </Text>
+                        <Text style={styles.content}>
+                            {itemSeleccionado.itemDesc}
                         </Text>
                     </View>
 
-                    <View style={windowsWidth > 500 ? { flexDirection: 'row', margin: 30, columnGap: 30 } : { flexDirection: 'col' }}>
-                        <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            {ubicacionOri == undefined || ubicacionOri.length == 0 ?
-                                <Text style={styles.content}>Sin ubicacion de origen</Text> :
-                                <SelectList
-                                    setSelected={(val) => setSelectedUbicacionOri(val)}
-                                    data={ubicacionOri}
-                                    save="key"
-                                    inputStyles={{ fontSize: 18, color: '#000' }}
-                                    boxStyles={{ width: '100%' }}
-                                    onSelect={() => console.log(selectedAlmacenOri, selectedUbicacionOri)}
-                                    placeholder='Ubicacion origen'
-                                    searchPlaceholder='buscar...'
-                                    dropdownTextStyles={{ color: '#808080' }}
-                                />
-                            }
-                        </View>
-                        <Icon
-                            name={windowsWidth > 500 ? "arrow-right" : 'arrow-down'}
-                            type='font-awesome'
-                            size={windowsWidth > 500 ? 25 : 16}
-                            color="#000"
-                            iconStyle={{ paddingHorizontal: 10, paddingVertical: 10 }}
-                            containerStyle={{ justifyContent: 'center' }}
-                        />
-                        <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            {ubicacionDes == undefined || ubicacionDes.length == 0 ?
-                                <Text style={styles.content}>Sin ubicacion de destino</Text> :
-                                <SelectList
-                                    setSelected={(val) => setSelectedUbicacionDes(val)}
-                                    data={ubicacionDes}
-                                    save="key"
-                                    inputStyles={{ fontSize: 18, color: '#000' }}
-                                    boxStyles={{ width: '100%' }}
-                                    onSelect={() => console.log(selectedAlmacenDes, selectedUbicacionDes)}
-                                    placeholder='Ubicacion destino'
-                                    searchPlaceholder='buscar...'
-                                    dropdownTextStyles={{ color: '#808080' }}
-                                />
-                            }
-                        </View>
-                    </View>
                     <View style={{ flexDirection: 'row', marginTop: 10, width: '100%', justifyContent: 'center' }}>
                         <Icon
                             raised
@@ -230,19 +184,15 @@ export function ArticulosProduccion({ navigation, route }) {
                         <Button
                             title="Confirmar y enviar"
                             onPress={() => {
-                                let suma = Number(cantidad) + Number(countQty);
-                                console.log(cantidad + ' : ' + countQty + ' : ' + pendiente)
-                                setEnableButton(true)
-                                if (suma <= pendiente) {
-                                    transferirItem();
-                                    setBarcodeItemTraslados(null)
-                                    setItemsTraslados(tablaItemsTraslados)
-                                    setEnableButton(false)
+                                setItemSeleccionado([])
+                                if (Number(itemSeleccionado.countQty) + Number(cantidad) <= Number(itemSeleccionado.totalQty)) {
+                                    guardarOrdenProdArt(itemSeleccionado, cantidad);
                                     setCantidad('1')
+                                    setIsModalArtProd(!isModalArtProd);
                                 } else {
-                                    console.log('Suma...', cantidad + ' : ' + Number(countQty))
-                                    Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de articulos a transferir!', [
-                                        { text: 'OK', onPress: () => setEnableButton(false) },
+                                    console.log('Suma...', cantidad + ' : ' + Number(itemSeleccionado.countQty))
+                                    Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de articulos!', [
+                                        { text: 'OK', onPress: () => { } },
                                     ]);
                                 }
                             }}
@@ -250,13 +200,17 @@ export function ArticulosProduccion({ navigation, route }) {
                         />
                         <Button
                             title="Cancelar"
-                            onPress={() => { setIsModalVisible(!isModalVisible); setItemTrasladoSeleccionado([]); setCantidad('1') }}
+                            onPress={() => {
+                                setIsModalArtProd(!isModalArtProd);
+                                setItemSeleccionado([]);
+                                setCantidad('1')
+                                setItemSeleccionado([])
+                            }}
                             buttonStyle={{ backgroundColor: '#F80000' }}
-                            disabled={enableButton}
                         />
                     </View>
                 </ScrollView>
-            </Modal> */}
+            </Modal>
 
             <TouchableOpacity
                 style={styles.floatingButtonPrint}
