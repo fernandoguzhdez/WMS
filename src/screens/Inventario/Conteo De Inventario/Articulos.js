@@ -3,19 +3,20 @@ import { DarkTheme, useNavigation } from '@react-navigation/native';
 import { DataTable } from 'react-native-paper';
 import { AuthContext } from '../../../contex/AuthContext';
 import axios from 'axios';
-import { View, StyleSheet, Text, Alert, useWindowDimensions, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, Alert, useWindowDimensions, FlatList, TouchableOpacity, TouchableHighlight, ScrollView } from 'react-native';
 import { Input, Card, lightColors } from '@rneui/themed';
-import { Button, SearchBar, Icon } from 'react-native-elements'
+import { Button, SearchBar, Icon, Badge } from 'react-native-elements'
 import Modal from "react-native-modal";
 import { SelectList } from 'react-native-dropdown-select-list'
 import Spinner from 'react-native-loading-spinner-overlay';
+import { SwipeListView } from 'react-native-swipe-list-view';
 
-export function Articulos({navigation}) {
+export function Articulos({ navigation }) {
 
     const { isLoading, filteredDataSourceArticulos, searchFilterFunctionArticulos, searchArticulos, activarBuscadorArticulos, setFilteredDataSourceArticulos, FilterInventarioArticulos,
         valueFilterInvArticulos, setValueFilterInvArticulos, isModalInvArticulos, setIsModalInvArticulos, guardarConteoArticulo, setArticulo, articulo, cargarTablaLotes, masterDataSourceArticulos,
         verificarEscaneoSerie, verificarLote, getArticulos } = useContext(AuthContext);
-    const [swipe, setSwipe] = useState(-195);
+    const [swipe, setSwipe] = useState(-150);
     const windowsWidth = useWindowDimensions().width;
     const [page, setPage] = useState(0);
     const [numberOfItemsPerPageList] = useState([50, 100, 150, 200]);
@@ -68,16 +69,20 @@ export function Articulos({navigation}) {
 
     }
 
+    const esArticulo = (item) => {
+        setIsModalInvArticulos(!isModalInvArticulos)
+        setArticulo(item)
+    }
+
 
     // Componente de tarjeta reutilizable
-    const Card = ({ item, btnTitle, metodo, icono }) => (
+    /* const Card = ({ item, btnTitle, metodo, icono }) => (
         <View style={{ ...styles.card, width: windowsWidth > 500 ? 350 : 300 }}>
             <View style={styles.header}>
                 <Text style={styles.title}>{item.itemCode}</Text>
             </View>
             <View style={styles.ContainerContent}>
                 <Text style={styles.content}>{item.itemDesc}</Text>
-                {/* <Text style={styles.content}>{gestionItem == 'I' ? 'Articulo' : gestionItem == 'S' ? 'Serie' : 'Lote'}</Text> */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ flexDirection: 'col' }}>
                         <View style={{ alignItems: 'center' }}>
@@ -106,12 +111,6 @@ export function Articulos({navigation}) {
                         <Text style={styles.content}>{item.totalQty}</Text>
                     </View>
                 </View>
-                {/* <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-                    <View style={{ alignItems: 'center' }}>
-                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Pendientes</Text>
-                        <Text style={styles.content}>{item.pendiente}</Text>
-                    </View>
-                </View> */}
             </View>
             <View style={{ margin: 20 }}>
                 <Button
@@ -123,7 +122,32 @@ export function Articulos({navigation}) {
                 />
             </View>
         </View>
-    );
+    ); */
+
+    const ItemView = ({ item }) => {
+        return (
+            // Flat List Item
+            <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry}
+                onPress={() => {
+                    item.gestionItem == 'I' ? esArticulo(item) : navigation.navigate('SeriesLotesProduccion', item)
+                    //setIsLoading(true)
+                }} >
+                <View style={{ backgroundColor: '#f1f3f4', opacity: item.status == 'C' ? 0.4 : 1, justifyContent: 'flex-start', flexDirection: 'row' }}  >
+                    <View style={styles.itemTexto}>
+                        <Text style={styles.texto}>
+                            Almacen: {item.whsCode}
+                            {item.binEntry == 0 ? '' : `  |  Ubicacion:  ` + item.binEntry}
+                            {'  |  Contados: ' + item.countQty} {'  |  Total: ' + item.totalQty + '    '}
+                            {item.gestionItem == 'S' ? <Badge status="success" value='  Serie  ' style={styles.badge} /> : item.gestionItem == 'L' ? <Badge status="warning" value='  Lote  ' style={styles.badge} /> : ''}
+                        </Text>
+                        <Text style={{ ...styles.texto }}>
+                        {item.itemCode}  |  {item.itemDesc.substring(0, 50 - 3)}...
+                        </Text>
+                    </View>
+                </View>
+            </TouchableHighlight>
+        );
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff', height: 'auto', overflow: 'hidden' }}>
@@ -149,7 +173,21 @@ export function Articulos({navigation}) {
                 containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
                 theme
             />
-            <FlatList
+            <SwipeListView
+                data={filteredDataSourceArticulos}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={ItemView}
+                style={{ marginVertical: 20 }}
+                renderHiddenItem={(data, rowMap) => (
+                    <View style={styles.rowBack}>
+
+                    </View>
+                )}
+                rightOpenValue={swipe}
+                stopLeftSwipe={-1}
+                stopRightSwipe={-1}
+            />
+            {/* <FlatList
                 data={filteredDataSourceArticulos}
                 renderItem={({ item }) =>
                     <Card
@@ -174,7 +212,7 @@ export function Articulos({navigation}) {
                 keyExtractor={(item, index) => index.toString()}
                 numColumns={windowsWidth > 500 ? 2 : 1}
                 contentContainerStyle={styles.flatListContent}
-            />
+            /> */}
 
             <Modal isVisible={isModalInvArticulos} style={{}} animationInTiming={1000} >
                 <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15 }}>
@@ -188,48 +226,6 @@ export function Articulos({navigation}) {
                         </Text>
                     </View>
 
-                    {/* <View style={windowsWidth > 500 ? { flexDirection: 'row', margin: 30, columnGap: 30 } : { flexDirection: 'col' }}>
-                        <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            {ubicacionOri == undefined || ubicacionOri.length == 0 ?
-                                <Text style={styles.content}>Sin ubicacion de origen</Text> :
-                                <SelectList
-                                    setSelected={(val) => setSelectedUbicacionOri(val)}
-                                    data={ubicacionOri}
-                                    save="key"
-                                    inputStyles={{ fontSize: 18, color: '#000' }}
-                                    boxStyles={{ width: '100%' }}
-                                    onSelect={() => console.log(selectedAlmacenOri, selectedUbicacionOri)}
-                                    placeholder='Ubicacion origen'
-                                    searchPlaceholder='buscar...'
-                                    dropdownTextStyles={{ color: '#808080' }}
-                                />
-                            }
-                        </View>
-                        <Icon
-                            name={windowsWidth > 500 ? "arrow-right" : 'arrow-down'}
-                            type='font-awesome'
-                            size={windowsWidth > 500 ? 25 : 16}
-                            color="#000"
-                            iconStyle={{ paddingHorizontal: 10, paddingVertical: 10 }}
-                            containerStyle={{ justifyContent: 'center' }}
-                        />
-                        <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            {ubicacionDes == undefined || ubicacionDes.length == 0 ?
-                                <Text style={styles.content}>Sin ubicacion de destino</Text> :
-                                <SelectList
-                                    setSelected={(val) => setSelectedUbicacionDes(val)}
-                                    data={ubicacionDes}
-                                    save="key"
-                                    inputStyles={{ fontSize: 18, color: '#000' }}
-                                    boxStyles={{ width: '100%' }}
-                                    onSelect={() => console.log(selectedAlmacenDes, selectedUbicacionDes)}
-                                    placeholder='Ubicacion destino'
-                                    searchPlaceholder='buscar...'
-                                    dropdownTextStyles={{ color: '#808080' }}
-                                />
-                            }
-                        </View>
-                    </View> */}
                     <View style={{ flexDirection: 'row', marginTop: 50, width: '100%', justifyContent: 'center' }}>
                         <Icon
                             raised
@@ -416,40 +412,36 @@ const styles = StyleSheet.create({
         backgroundColor: '#800000', // Change the color as needed
         borderRadius: 28,
         elevation: 8, // Android shadow
+    },
+    itemTexto: {
+        height: 110,
+        width: 'auto',
+        paddingHorizontal: 10,
+        justifyContent: 'center'
+    },
+    texto: {
+        padding: 10,
+        color: '#384347',
+        fontWeight: 'bold',
+        fontSize: 26,
+    },
+    badge: {
+        color: '#fff',
+        fontSize: 26,
+    },
+    rowBack: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        borderRadius: 0,
+        height: 90,
+        marginVertical: 2,
+    },
+    rowBackButtonEliminar: {
+        backgroundColor: '#ff0000',
+        width: 150,
+        height: 90,
+        textAlign: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
     }
 });
-
-/* const styles = StyleSheet.create({
-    titleTable: {
-        color: '#ffff',
-        fontWeight: 'bold',
-        fontSize: 20,
-        fontFamily: 'roboto',
-    },
-    title: {
-        flex: 1,
-        flexWrap: 'wrap',
-        alignItems: 'flex-start',
-    },
-    cellContent: {
-        flex: 1,
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        margin: 5,
-        fontSize: 22,
-        color: '#000',
-        minHeight: 60
-    },
-    cellTitle: {
-        color: '#fff',
-        fontSize: 22,
-        fontWeight: 'bold'
-    },
-    numericTitle: {
-        maxWidth: 50,
-    },
-    numericCell: {
-        maxWidth: 100,
-        justifyContent: 'flex-start',
-    }
-}); */

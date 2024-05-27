@@ -26,6 +26,7 @@ import { ArticulosProduccion } from '../screens/Produccion/Orden De Fabricacion/
 import { DocsOrdenDeFabricacion } from '../screens/Produccion/Orden De Fabricacion/DocsOrdenDeFabricacion';
 import { Produccion } from '../screens/Produccion/Produccion';
 import { SeriesLotesProduccion } from '../screens/Produccion/Orden De Fabricacion/SeriesLotesProduccion';
+import { SeriesLotesProdEnviados } from '../screens/Produccion/Orden De Fabricacion/SeriesLotesProdEnviados';
 
 const Stack = createNativeStackNavigator();
 
@@ -99,13 +100,14 @@ export function Navigation() {
                 <Stack.Screen name="ItemsTransferencia" component={ItemsTransferencia} options={{ headerShown: true, title: 'Items Transferencia', }} />
                 <Stack.Screen name="ListadoItemsTransfer" component={ListadoItemsTransfer} options={{ headerShown: true, title: 'Articulo transferencia', }} />
                 <Stack.Screen name="ListadoSeriesLotes" component={ListadoSeriesLotes} options={{ headerShown: true, title: 'Listado Series/Lotes', }} />
-                <Stack.Screen name="TransferenciaSerieLote" component={TransferenciaSerieLote} options={{ headerShown: true, title: 'Captura de serie y lotes', }} />
+                <Stack.Screen name="TransferenciaSerieLote" component={TransferenciaSerieLote} options={{ headerShown: true, title: 'Captura de series y lotes', }} />
                 <Stack.Screen name="DetalleInventario" component={DetalleInventario} options={{ headerShown: true, title: 'Detalle Inventario', }} />
                 <Stack.Screen name="DetalleInventarioSL" component={DetalleInventarioSL} options={{ headerShown: true, title: 'Detalle Inventario Series/Lotes', }} />
                 <Stack.Screen name="DocsOrdenDeFabricacion" component={DocsOrdenDeFabricacion} options={{ headerShown: true, title: 'Documentos', }} />
                 <Stack.Screen name="Produccion" component={Produccion} options={{ headerShown: true, title: 'Produccion', }} />
                 <Stack.Screen name="ArticulosProduccion" component={ArticulosProduccion} options={{ headerShown: true, title: 'Articulos', }} />
                 <Stack.Screen name="SeriesLotesProduccion" component={SeriesLotesProduccion} options={{ headerShown: true, title: 'Series/Lotes', }} />
+                <Stack.Screen name="SeriesLotesProdEnviados" component={SeriesLotesProdEnviados} options={{ headerShown: true, title: 'Series/Lotes', }} />
             </Stack.Navigator>
         </NavigationContainer>
     );

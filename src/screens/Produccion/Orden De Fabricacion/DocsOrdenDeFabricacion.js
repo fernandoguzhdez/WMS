@@ -12,7 +12,8 @@ import Spinner from 'react-native-loading-spinner-overlay';
 
 export function DocsOrdenDeFabricacion({ navigation }) {
 
-    const { url, tokenInfo, setIsLoading, isLoading, getAlmacenes, setIdCodeSL, setSerieLoteTransfer, enviarTransferencia } = useContext(AuthContext);
+    const { url, tokenInfo, setIsLoading, isLoading, getAlmacenes, setIdCodeSL, setSerieLoteTransfer, enviarDatosProduccion, getDocsProduccion,
+        docsProduccion, setDocsProduccion, filteredDocsProduccion, setFilteredDocsProduccion } = useContext(AuthContext);
     const [tablaSolicitudTransfer, setTablaSolicitudTransfer] = useState([]);
     const [filteredDataSource, setFilteredDataSource] = useState([]);
     const [isModalVisible, setModalVisible] = useState(false);
@@ -25,28 +26,10 @@ export function DocsOrdenDeFabricacion({ navigation }) {
 
     useEffect(() => {
         getAlmacenes();
-        getDocuments()
+        getDocsProduccion()
     }, []);
 
-    const getDocuments = () => {
-        setIsLoading(true)
-        // Set headers
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${tokenInfo.token}`
-        };
-        // Make GET request
-        axios.get(`${url}/api/Production/Get_Documents`, { headers })
-            .then(response => {
-                setIsLoading(false)
-                setTablaSolicitudTransfer(response.data.owor)
-                setFilteredDataSource(response.data.owor)
-            })
-            .catch(error => {
-                setIsLoading(false)
-                console.error('No hay solicitudes de transferencia', error);
-            });
-    }
+
 
     const searchFilterFunctionSolicitudT = (text) => {
         // Check if searched text is not blank
@@ -54,8 +37,8 @@ export function DocsOrdenDeFabricacion({ navigation }) {
             // Inserted text is not blank
             // Filter the tablaSolicitudTransfer
             // Update FilteredDataSource
-            setFilteredDataSource(
-                filteredDataSource.filter((item) =>
+            setFilteredDocsProduccion(
+                filteredDocsProduccion.filter((item) =>
                     item.prodName.toUpperCase().includes(text.toUpperCase()) || item.docNum.toString().includes(text.toString())
                 )
             );
@@ -63,7 +46,7 @@ export function DocsOrdenDeFabricacion({ navigation }) {
         } else {
             // Inserted text is blank
             // Update FilteredDataSource with tablaSolicitudTransfer
-            setFilteredDataSource(tablaSolicitudTransfer);
+            setFilteredDocsProduccion(docsProduccion);
             setSearchSolicitudT(text);
         }
     };
@@ -127,7 +110,7 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                 }
 
                 <SwipeListView
-                    data={filteredDataSource}
+                    data={filteredDocsProduccion}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={ItemView}
                     renderHiddenItem={(data, rowMap) => (
@@ -135,7 +118,7 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                             <Button
                                 buttonStyle={{ ...styles.rowBackButtonEliminar, display: data.item.status == 'C' ? 'none' : 'flex' }}
                                 onPress={() => {
-                                    Alert.alert('Info', '¿Estas seguro de continuar con la transferencia?', [
+                                    Alert.alert('Info', '¿Estas seguro de continuar?', [
                                         {
                                             text: 'Cancelar',
                                             onPress: () => console.log('Cancel Pressed'),
@@ -143,7 +126,7 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                                         },
                                         {
                                             text: 'Enviar', onPress: () => {
-                                                enviarTransferencia(data.item.docEntry);
+                                                enviarDatosProduccion(data.item.docEntry);
                                                 setIsLoading(true);
                                             }
                                         },
@@ -158,7 +141,7 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                                     />
                                 } */
                                 iconTop
-                                title="Transferir"
+                                title="Enviar"
                             />
                         </View>
                     )}

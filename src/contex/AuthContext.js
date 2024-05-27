@@ -99,6 +99,8 @@ export const AuthProvider = ({ children }) => {
     const [searchDetalleInv, setSearchDetalleInv] = useState('');
     const [dataCompleteDI, setDataCompleteDI] = useState([]);
     //VARIABLES PARA EL MODULO DE PRODUCCION
+    const [docsProduccion, setDocsProduccion] = useState([])
+    const [filteredDocsProduccion, setFilteredDocsProduccion] = useState([])
     const [dataArtProd, setDataArtProd] = useState([])
     const [filterDataArtProd, setFilterDataArtProd] = useState([])
     const [valueArtProd, setValueArtProd] = useState(null)
@@ -106,6 +108,10 @@ export const AuthProvider = ({ children }) => {
     const [dataSLProd, setDataSLProd] = useState([])
     const [valueSLProd, setValueSLProd] = useState(null)
     const [isModalArtProd, setIsModalArtProd] = useState(false);
+    const [itemSeleccionadoProd, setItemSeleccionadoProd] = useState([])
+    const [isModalSLProd, setIsModalSLProd] = useState(false)
+    const [dataSLProdEnviado, setDataSLProdEnviado] = useState([])
+    const [itemSLProd, setItemSLProd] = useState([])
 
 
     const splitCadenaEscaner = (dato1, dato2, modulo) => {
@@ -118,6 +124,42 @@ export const AuthProvider = ({ children }) => {
         const ubicacion = partes[3];
 
         switch (modulo) {
+            case 'EnterSLProd':
+                FilterSLProd(partes[1]);
+                break;
+            case 'EnterProduccionArticulo':
+                if (partes.length == 3) {
+                    let filtradoArticuloEscaner = FiltrarArticuloProduccion(partes[0], partes[1], partes[2])
+                    if (filtradoArticuloEscaner == 0) {
+                        Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
+                            {
+                                text: 'OK', onPress: () => {
+                                    setFilterDataArtProd(dataArtProd)
+                                }
+                            },
+                        ]);
+                    } else {
+                        setFilterDataArtProd(filtradoArticuloEscaner)
+                    }
+                } else {
+                    let filtradoSerieLoteEscaner = FiltrarArticuloProduccion(codigoArticulo, almacen, ubicacion)
+                    if (filtradoSerieLoteEscaner == 0) {
+                        Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
+                            {
+                                text: 'OK', onPress: () => {
+                                    setFilterDataArtProd(dataArtProd)
+                                }
+                            },
+                        ]);
+                    } else {
+                        console.log('Filtrando serie/lote...', filtradoSerieLoteEscaner[0])
+                        console.log('idCode...', idCodeSerieLote)
+                        tablaSLProd(filtradoSerieLoteEscaner[0], idCodeSerieLote, 'escaner')
+                        setItemSeleccionadoProd(filtradoSerieLoteEscaner[0])
+                        setFilterDataArtProd(dataArtProd)
+                    }
+                }
+                break;
             case 'EnterSolicitudTransferencia':
                 if (partes.length == 3) {
                     let filtradoArticuloEscaner = searchFilterItemsTrasladosEscan(partes[0], partes[1], partes[2])
@@ -1530,6 +1572,26 @@ export const AuthProvider = ({ children }) => {
     };
 
     //METODOS PARA EL MODULO DE PRODUCCION
+    const getDocsProduccion = () => {
+        setIsLoading(true)
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        axios.get(`${url}/api/Production/Get_Documents`, { headers })
+            .then(response => {
+                setIsLoading(false)
+                setDocsProduccion(response.data.owor)
+                setFilteredDocsProduccion(response.data.owor)
+            })
+            .catch(error => {
+                setIsLoading(false)
+                console.error('No hay solicitudes de transferencia', error);
+            });
+    }
+
     const tablaArtProd = async (docEntry) => {
         // Set headers
         const headers = {
@@ -1561,10 +1623,18 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    const tablaSLProd = async (item) => {
+    function FiltrarArticuloProduccion(itemCode, whsCode, binEntry) {
+        return dataArtProd.filter(function (elemento) {
+            return elemento.itemCode == itemCode &&
+                elemento.whsCode == whsCode &&
+                elemento.binEntry == binEntry;
+        });
+    }
+
+    const tablaSLProd = async (item, idCode, accion) => {
         setDataSLProd([])
         setFilterDataSLProd([])
-        setIsLoading(true)
+        //setIsLoading(true)
         // Set headers
         const headers = {
             'Content-Type': 'application/json',
@@ -1573,15 +1643,40 @@ export const AuthProvider = ({ children }) => {
         // Make GET request
         await axios.get(`${url}/api/Production/Get_Disp_SerAndBatchs?ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}&WhsCode=${item.whsCode}&BinCode=${item.binCode}`, { headers })
             .then(response => {
-                console.log('obteniendo series/lotes...', response.data.serialxManbach)
                 setDataSLProd(response.data.serialxManbach)
                 setFilterDataSLProd(response.data.serialxManbach)
-                setIsLoading(false)
+                //setIsLoading(false)
+
+                if (accion == 'escaner') {
+                    let filtradoSerieLote = FiltrarSerieLoteProd(response.data.serialxManbach, idCode)
+                    if (filtradoSerieLote.length == 0) {
+                        Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
+                            {
+                                text: 'OK', onPress: () => {
+                                }
+                            },
+                        ]);
+                        setIsEnter(false)
+                    } else {
+                        //setItemSeleccionadoProd(filtradoSerieLote[0])
+                        setItemSLProd(filtradoSerieLote[0])
+                        console.log('serie/lote encontrado...', filtradoSerieLote[0])
+                        setIsEnter(true)
+                    }
+
+                }
             })
             .catch(error => {
                 console.error('error', error);
-                setIsLoading(false)
+                //setIsLoading(false)
+                setIsEnter(false)
             });
+    }
+
+    function FiltrarSerieLoteProd(data, idCode) {
+        return data.filter(function (elemento) {
+            return elemento.idCode.toUpperCase() == idCode.toUpperCase()
+        });
     }
 
     const FilterSLProd = (text) => {
@@ -1627,7 +1722,7 @@ export const AuthProvider = ({ children }) => {
                 console.log(response.data)
                 setIsLoading(false);
                 Alert.alert('Info', 'Orden de produccion actualizada!', [
-                    { text: 'OK', onPress: () => { } },
+                    { text: 'OK', onPress: () => { tablaArtProd(item.docEntry) } },
                 ]);
             })
             .catch(error => {
@@ -1643,6 +1738,192 @@ export const AuthProvider = ({ children }) => {
                 }
             });
     }
+
+    const cargarTablaSLProdEnviado = async (item) => {
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        await axios.get(`${url}/api/Production/Get_SerAndBatchs?IdDocumentCnt=${item.docEntry}&LineNum=${item.lineNum}&ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}`, { headers })
+            .then(response => {
+
+                let arrayseriesLotes = response.data.SerialxManbach;
+                if (arrayseriesLotes == undefined) {
+                    setDataSLProdEnviado([])
+                    console.log('no hay datos, deberia dar undefined...')
+                } else {
+                    setDataSLProdEnviado(arrayseriesLotes)
+                    console.log('si hay datos....', arrayseriesLotes)
+                }
+            })
+            .catch(error => {
+                console.error('error al cargar tabla de series/lotes produccion enviados..', error);
+            });
+    }
+
+    const guardarOrdenProdSL = (item, articulo, cantidad) => {
+        let SLProd = [
+            {
+                "baseLineNum": articulo.lineNum,
+                "serManLineNum": 0,
+                "gestionItem": item.gestionItem,
+                "itemCode": item.itemCode,
+                "idCode": item.idCode,
+                "sysNumber": item.sysNumber,
+                "quantityCounted": Number(cantidad),
+                "whsCode": item.whsCode,
+                "binEntry": item.binEntry,
+                "binCode": item.binCode,
+                "updateDate": item.updateDate
+            }
+        ]
+        if (dataSLProdEnviado.length == 0) {
+            console.log('Insertando nuevo dato...', dataSLProdEnviado.length)
+            actualizarSLProd(item, articulo, cantidad, 'insertarNuevo')
+
+        } else {
+            dataSLProdEnviado.push(SLProd[0])
+            actualizarSLProd(item, articulo, cantidad, 'actualizar')
+            console.log('actualizando datos...', dataSLProdEnviado.length)
+        }
+    }
+
+    const actualizarSLProd = (item, articulo, cantidad, query) => {
+        // Set headers
+        const headers = {
+            Accept: "application/json",
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        axios
+            .put(`${url}/api/Production/Update`, {
+                "docEntry": articulo.docEntry,
+                "items": [
+                    {
+                        "docEntry": articulo.docEntry,
+                        "lineNum": articulo.lineNum,
+                        "itemCode": articulo.itemCode,
+                        "barCode": articulo.barCode,
+                        "itemDesc": articulo.itemDesc,
+                        "gestionItem": articulo.gestionItem,
+                        "whsCode": articulo.whsCode,
+                        "binEntry": articulo.binEntry,
+                        "binCode": articulo.binCode,
+                        "quantityCounted": Number(articulo.countQty) + Number(cantidad),
+                        "serialandManbach": query == 'actualizar' ?
+                            dataSLProdEnviado :
+                            [{
+                                "baseLineNum": articulo.lineNum,
+                                "serManLineNum": 0,
+                                "gestionItem": item.gestionItem,
+                                "itemCode": item.itemCode,
+                                "idCode": item.idCode,
+                                "sysNumber": item.sysNumber,
+                                "quantityCounted": Number(cantidad),
+                                "whsCode": item.whsCode,
+                                "binEntry": item.binEntry,
+                                "binCode": item.binCode,
+                                "updateDate": item.updateDate
+                            }]
+                    }
+                ]
+            }, { headers })
+            .then((response) => {
+                console.log('Respuesta...', response.data)
+
+                //tablaArtProd(articulo.docEntry)
+                //setIsLoading(false);
+                Alert.alert('Info', `Orden de produccion actualizada : ${response.status}`, [
+                    { text: 'OK', onPress: () => { cargarTablaSLProdEnviado(articulo), tablaArtProd(articulo.docEntry) } },
+                ]);
+            })
+            .catch(error => {
+                //setIsLoading(false);
+                Alert.alert('Error', `Peticion no realizada : ${response.status}`, [
+                    { text: 'OK', onPress: () => { } },
+                ]);
+            });
+    }
+
+    const eliminarSLProdEnviado = (id, articulo, item) => {
+        const newArray = dataSLProdEnviado.filter((elemento, index) => index !== id);
+
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        axios
+            .put(`${url}/api/Production/Update`, {
+                "docEntry": articulo.docEntry,
+                "items": [
+                    {
+                        "docEntry": articulo.docEntry,
+                        "lineNum": articulo.lineNum,
+                        "itemCode": articulo.itemCode,
+                        "barCode": articulo.barCode,
+                        "itemDesc": articulo.itemDesc,
+                        "gestionItem": articulo.gestionItem,
+                        "whsCode": articulo.whsCode,
+                        "binEntry": articulo.binEntry,
+                        "binCode": articulo.binCode,
+                        "quantityCounted": Number(articulo.countQty) - Number(item.quantityCounted),
+                        "serialandManbach": newArray
+                    }
+                ]
+            }, { headers })
+            .then((response) => {
+                setIsLoading(false)
+                Alert.alert('Info', '¡Elemento Eliminado!', [
+                    {
+                        text: 'OK', onPress: () => {
+                            cargarTablaSLProdEnviado(articulo)
+                            //getItemsTraslados(docEntry)
+                        }
+                    },
+                ]);
+            })
+            .catch(error => {
+                console.log(error)
+                setIsLoading(false)
+            });
+    }
+
+    const enviarDatosProduccion = async (docEntry) => {
+        console.log('Este es el docEntry...', docEntry)
+        const headers = {
+            Accept: "application/json",
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        await axios.post(`${url}/api/Produccion/Close?IdCounted=${docEntry}`, { docEntry }, { headers }
+        )
+            .then(response => {
+                console.log('Respuesta...', response.status)
+                setIsLoading(false)
+                setDataSLProdEnviado([])
+                setDataSLProd([])
+                setValueSLProd(null)
+                setItemSLProd([])
+                setDataSLProdEnviado([])
+                setValueArtProd(null)
+                setItemSeleccionadoProd([])
+                setFilterDataArtProd([])
+                setDataArtProd([])
+                tablaArtProd(docEntry)
+            })
+            .catch(error => {
+                setIsLoading(false)
+                Alert.alert('Error', `Error al cerrar : ${error}`, [
+                    { text: 'OK', onPress: () => { setFilteredDocsProduccion([]), setDocsProduccion([]), getDocsProduccion() } },
+                ]);
+                console.log('Error al cerrar', error.message)
+            });
+    }
+
 
 
     return (
@@ -1695,7 +1976,8 @@ export const AuthProvider = ({ children }) => {
                 searchDetalleInvSL, setSearchDetalleInvSL, handleSearchDetalleInvSL, searchDetalleInv, setSearchDetalleInv, handleSearchDetalleInv, dataCompleteDI, setDataCompleteDI, fetchDataDetalleInv, splitCadenaEscaner,
                 idCodeSL, setIdCodeSL,
                 //VARIABLES DEL MODULO DE PRODUCCION
-                tablaArtProd, dataArtProd, filterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, dataSLProd, setDataSLProd, filterDataSLProd, setFilterDataSLProd, tablaSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd, guardarOrdenProdArt, isModalArtProd, setIsModalArtProd
+                tablaArtProd, dataArtProd, setDataArtProd, filterDataArtProd, setFilterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, dataSLProd, setDataSLProd, filterDataSLProd, setFilterDataSLProd, tablaSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd, guardarOrdenProdArt, isModalArtProd, setIsModalArtProd, itemSeleccionadoProd, setItemSeleccionadoProd,
+                cargarTablaSLProdEnviado, isModalSLProd, setIsModalSLProd, guardarOrdenProdSL, dataSLProdEnviado, setDataSLProdEnviado, itemSLProd, setItemSLProd, eliminarSLProdEnviado, enviarDatosProduccion, getDocsProduccion, docsProduccion, setDocsProduccion, filteredDocsProduccion, setFilteredDocsProduccion
             }}
         >
             {children}

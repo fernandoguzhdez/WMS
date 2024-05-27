@@ -17,18 +17,15 @@ export default function Inventario({ navigation, route }) {
             <View style={[styles.card, { backgroundColor: cardColor, width: windowsWidth > 500 ? (windowsWidth / 3) - 33 : (windowsWidth / 2) - 40 }]}>
                 <TouchableOpacity style={styles.middle} onPress={() => {
                     setIsLoading(true);
-                    switch (item.idSubMenu) {
-                        case 1:
+                    switch (item.nameForm) {
+                        case 'InvCounted':
                             navigation.navigate('ConteoInventario');
                             getInventario();
                             break;
-                        case 2:
-                            navigation.navigate('TransferenciaStock');
-                            break;
-                        case 5:
+                        case 'InvSolStock':
                             navigation.navigate('SolicitudTransferencia');
                             break;
-                        case 6:
+                        case 'InvDetal':
                             navigation.navigate('DetalleInventario');
                             setData([])
                             setDataComplete([])

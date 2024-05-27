@@ -15,9 +15,14 @@ export function Produccion({ navigation, route }) {
             <View style={[styles.card, { backgroundColor: cardColor, width: windowsWidth > 500 ? (windowsWidth / 3) - 33 : (windowsWidth / 2) - 40 }]}>
                 <TouchableOpacity style={styles.middle} onPress={() => {
                     setIsLoading(true);
-                    switch (item.idSubMenu) {
-                        case 7:
+                    switch (item.nameForm) {
+                        case 'PrdOrf':
                             navigation.navigate('DocsOrdenDeFabricacion');
+                            //getInventario();
+                            break;
+                        case 'PrdEmi':
+                            console.log('PrdEmi')
+                            //navigation.navigate('DocsOrdenDeFabricacion');
                             //getInventario();
                             break;
 
@@ -25,7 +30,7 @@ export function Produccion({ navigation, route }) {
                             break;
                     }
                 }}>
-                    <Text style={{...styles.texto, fontSize: windowsWidth > 500 ? 24: 20}}>
+                    <Text style={{ ...styles.texto, fontSize: windowsWidth > 500 ? 24 : 20 }}>
                         {item.name}
                     </Text>
                     {/* Otros elementos de la tarjeta */}
@@ -62,7 +67,7 @@ export function Produccion({ navigation, route }) {
                     data={route.params.detalleSubMenus}
                     renderItem={renderCard}
                     keyExtractor={(item, index) => index.toString()}
-                    numColumns={windowsWidth > 500 ? 3 : 2 }
+                    numColumns={windowsWidth > 500 ? 3 : 2}
                 />
             )}
         </View>

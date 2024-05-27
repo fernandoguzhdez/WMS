@@ -1,53 +1,58 @@
 import React, { useEffect, useContext, useState } from 'react'
 import { AuthContext } from '../../../contex/AuthContext';
 import Spinner from 'react-native-loading-spinner-overlay';
-import { View, Text, Alert, FlatList, ScrollView, useWindowDimensions, StyleSheet } from 'react-native';
+import { View, Text, Alert, FlatList, ScrollView, useWindowDimensions, StyleSheet, TouchableOpacity, TouchableHighlight } from 'react-native';
 import { Input, Card, lightColors } from '@rneui/themed';
-import { Button, SearchBar, Icon } from 'react-native-elements'
+import { Button, SearchBar, Icon, Badge } from 'react-native-elements'
+import { SwipeListView } from 'react-native-swipe-list-view';
 import Modal from "react-native-modal";
 import { SelectList } from 'react-native-dropdown-select-list'
 
 export const SeriesLotesProduccion = ({ navigation, route }) => {
 
-    const { isLoading, setFilterDataSLProd, filterDataSLProd, setDataSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd  } = useContext(AuthContext);
+    const { isLoading, setFilterDataSLProd, filterDataSLProd, setDataSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd, cargarTablaSLProdEnviado, isModalSLProd, setIsModalSLProd,
+        setItemSeleccionadoProd, itemSeleccionadoProd, guardarOrdenProdSL, itemSLProd, setItemSLProd, setIsEnter, isEnter, setIsLoading, splitCadenaEscaner, dataSLProd, setDataSLProdEnviado } = useContext(AuthContext);
 
     const [cantidad, setCantidad] = useState('1');
+    const [cantidadContados, setCantidadContados] = useState(0);
     const windowsWidth = useWindowDimensions().width;
     const [enableButton, setEnableButton] = useState(false)
+    const [swipe, setSwipe] = useState(-150);
 
     const limpiarVariables = () => {
         const unsubscribe = navigation.addListener('beforeRemove', () => {
             setFilterDataSLProd([])
             setDataSLProd([])
+            setValueSLProd(null)
+            setItemSLProd([])
+            setDataSLProdEnviado([])
         });
         return unsubscribe;
     }
 
     useEffect(() => {
         tablaSLProd(route.params)
+        cargarTablaSLProdEnviado(route.params)
         limpiarVariables()
+        setCantidadContados(route.params.countQty)
     }, [])
 
 
     const handleSubmit = () => {
         //setIsLoading(true)
-        //splitCadenaEscaner(barcodeItemTraslados, route.params.docEntry, 'EnterSolicitudTransferencia')
-        //setItemsTraslados(tablaItemsTraslados)
+        splitCadenaEscaner(valueSLProd, route.params.docEntry, 'EnterSLProd')
+        //setFilterDataSLProd(dataSLProd)
     }
 
     // Componente de tarjeta reutilizable
-    const CardSeriesLotes = ({ item }) => (
+    /* const CardSeriesLotes = ({ item }) => (
         <View style={{ ...styles.card, width: windowsWidth > 500 ? 350 : 300 }}>
             <View style={styles.header}>
                 <Text style={styles.title}>{item.idCode}</Text>
             </View>
             <View style={styles.ContainerContent}>
-                <Text style={styles.content}>{'Almacen ' + item.whsCode + ' || ' + item.binCode}</Text>
+                <Text style={styles.content}>{'Almacen ' + item.whsCode}</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-                    {/* <View style={{ alignItems: 'center' }}>
-                        <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Contados</Text>
-                        <Text style={styles.content}>{item.quantityDisp}</Text>
-                    </View> */}
                     <View style={{ alignItems: 'center' }}>
                         <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Total</Text>
                         <Text style={styles.content}>{item.quantityTotal}</Text>
@@ -61,11 +66,12 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
                         titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                         containerStyle={{ alignItems: 'center' }}
                         onPress={() => {
-                            //ubicacionDesOri(fromWhsCode, toWhsCode); setDataSerieLoteTransfer(item)
+                            setItemSLProd(item)
+                            setIsModalSLProd(!isModalSLProd)
                         }}
                         icon={
                             <Icon
-                                name="exchange"
+                                name="plus-square"
                                 type='font-awesome'
                                 size={windowsWidth > 500 ? 25 : 18}
                                 color="#fff"
@@ -79,12 +85,13 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
                         titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10, color: '#fff' }}
                         containerStyle={{ alignItems: 'center' }}
                         onPress={() => {
-                            //ubicacionDesOri(fromWhsCode, toWhsCode); setDataSerieLoteTransfer(item)
-                            //console.log('Selecciona Lote...', item)
+                            setItemSLProd(item)
+                            setIsModalSLProd(!isModalSLProd)
+                            console.log('Selecciona Lote...', item)
                         }}
                         icon={
                             <Icon
-                                name="exchange"
+                                name="plus-square"
                                 type='font-awesome'
                                 size={windowsWidth > 500 ? 25 : 18}
                                 color="#fff"
@@ -96,87 +103,139 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
                 }
             </View>
         </View>
-    );
+    ); */
+
+    const ItemView = ({ item }) => {
+        return (
+            // Flat List Item
+            <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry}
+                onPress={() => {
+                    setItemSLProd(item)
+                    setIsModalSLProd(!isModalSLProd)
+                    //setIsLoading(true)
+                }} >
+                <View style={{ backgroundColor: '#f1f3f4', opacity: item.status == 'C' ? 0.4 : 1, justifyContent: 'flex-start', flexDirection: 'row' }}  >
+                    <View style={styles.itemTexto}>
+                        <Text style={styles.texto}>
+                            {item.idCode}  |
+                            Almacen: {item.whsCode}
+                            {item.binEntry == 0 ? '' : `  |  Ubicacion:  ` + item.binEntry}
+                            {'  |  Cantidad: ' + item.quantityDisp + '    '}
+                        </Text>
+                    </View>
+                </View>
+            </TouchableHighlight>
+        );
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff', height: 'auto', overflow: 'hidden' }}>
-            <Spinner visible={isLoading} size={60} color='#ffff' />
+            {/* <Spinner visible={isLoading} size={60} color='#ffff' /> */}
             <SearchBar
                 platform="default"
                 onChangeText={(text) => { FilterSLProd(text); text == '' ? setValueSLProd(null) : setValueSLProd(text.toLocaleUpperCase()) }}
-                onClearText={(text) =>  FilterSLProd(text)}
+                onClearText={(text) => FilterSLProd(text)}
                 placeholder="Buscar aqui..."
                 placeholderTextColor="#888"
                 cancelButtonTitle="Cancel"
                 cancelButtonProps={{}}
                 onCancel={() => console.log('cancelando...')}
                 value={valueSLProd}
-                //onSubmitEditing={handleSubmit}
+                onSubmitEditing={handleSubmit}
                 inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, color: '#000' }}
                 containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
                 theme
             />
-            <FlatList
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <Button
+                    buttonStyle={{ ...styles.ButtonTransferir }}
+                    titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
+                    onPress={() => {
+                        Alert.alert('Info', '¿Estas seguro de continuar con la transferencia?', [
+                            {
+                                text: 'Cancelar',
+                                onPress: () => console.log('Cancel Pressed'),
+                                style: 'cancel',
+                            },
+                            {
+                                text: 'Enviar', onPress: () => {
+                                    //enviarTransferencia(docEntry);
+                                    navigation.navigate('ListadoItemsTransfer')
+                                }
+                            },
+                        ]);
+                    }}
+                    icon={
+                        <Icon
+                            name="send"
+                            type='font-awesome'
+                            size={windowsWidth > 500 ? 25 : 18}
+                            color="#fff"
+                            iconStyle={{ paddingHorizontal: 10 }}
+                        />
+                    }
+                    title="Enviar"
+                />
+                <Button
+                    buttonStyle={{ backgroundColor: '#3b5958', width: 'auto' }}
+                    titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
+                    containerStyle={{ alignItems: 'flex-end', marginHorizontal: 40 }}
+                    onPress={() => {
+                        navigation.navigate('SeriesLotesProdEnviados', route.params)
+                        cargarTablaSLProdEnviado(route.params)
+                        setDataSLProdEnviado([])
+                        //cargarTablaSeriesLotesTransfer();
+                        //setTablaSeriesLotesTransfer([]);
+                    }}
+                    icon={
+                        <Icon
+                            name="eye"
+                            type='font-awesome'
+                            size={windowsWidth > 500 ? 25 : 18}
+                            color="#fff"
+                            iconStyle={{ paddingHorizontal: 10 }}
+                        />
+                    }
+                    title="Ver Enviados"
+                />
+            </View>
+            {/* <FlatList
                 data={filterDataSLProd}
                 renderItem={({ item }) =>
                     <CardSeriesLotes item={item} />}
                 keyExtractor={(item, index) => index.toString()}
                 numColumns={windowsWidth > 500 ? 2 : 1}
                 contentContainerStyle={styles.flatListContent}
+            /> */}
+
+            <SwipeListView
+                data={filterDataSLProd}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={ItemView}
+                style={{ marginVertical: 20 }}
+                renderHiddenItem={(data, rowMap) => (
+                    <View style={styles.rowBack}>
+
+                    </View>
+                )}
+                rightOpenValue={swipe}
+                stopLeftSwipe={-1}
+                stopRightSwipe={-1}
             />
 
-            {/* <Modal isVisible={isModalSerieLote} style={{}} animationInTiming={1000}>
-                <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15, height: '100%' }}>
-                    <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar ubicacion y cantidad</Text>
-                    <View style={{ alignItems: 'center' }}>
+            <Modal isVisible={isModalSLProd} style={{}} animationInTiming={1000} >
+                <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15 }}>
+                    <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar cantidad</Text>
+                    <View style={{ alignItems: 'center', marginVertical: 40 }}>
                         <Text style={styles.content}>
-                            {dataSerieLoteTransfer.idCode}
+                            {itemSLProd.itemCode}
+                        </Text>
+                        <Text style={styles.content}>
+                            {itemSLProd.idCode}
                         </Text>
                     </View>
 
-                    <View style={windowsWidth > 500 ? { flexDirection: 'row', margin: 30, columnGap: 30 } : { flexDirection: 'col' }}>
-                        <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            {ubicacionOri == undefined || ubicacionOri.length == 0 ?
-                                <Text style={styles.content}>Sin ubicacion de origen</Text> :
-                                <SelectList
-                                    setSelected={(val) => setSelectedUbicacionOri(val)}
-                                    data={ubicacionOri}
-                                    save="key"
-                                    inputStyles={{ fontSize: 18, color: '#000' }}
-                                    boxStyles={{ width: '100%' }}
-                                    onSelect={() => console.log(selectedAlmacenOri, selectedUbicacionOri)}
-                                    placeholder='Ubicacion origen'
-                                    searchPlaceholder='buscar...'
-                                    dropdownTextStyles={{ color: '#808080' }}
-                                />
-                            }
-                        </View>
-                        <Icon
-                            name={windowsWidth > 500 ? "arrow-right" : 'arrow-down'}
-                            type='font-awesome'
-                            size={windowsWidth > 500 ? 25 : 16}
-                            color="#000"
-                            iconStyle={{ paddingHorizontal: 10, paddingVertical: 10 }}
-                            containerStyle={{ justifyContent: 'center' }}
-                        />
-                        <View style={windowsWidth > 500 ? { flexDirection: 'column', flex: 6 } : { flexDirection: 'column' }}>
-                            {ubicacionDes == undefined || ubicacionDes.length == 0 ?
-                                <Text style={styles.content}>Sin ubicacion de destino</Text> :
-                                <SelectList
-                                    setSelected={(val) => setSelectedUbicacionDes(val)}
-                                    data={ubicacionDes}
-                                    save="key"
-                                    inputStyles={{ fontSize: 18, color: '#000' }}
-                                    boxStyles={{ width: '100%' }}
-                                    onSelect={() => console.log(selectedAlmacenDes, selectedUbicacionDes)}
-                                    placeholder='Ubicacion destino'
-                                    searchPlaceholder='buscar...'
-                                    dropdownTextStyles={{ color: '#808080' }}
-                                />
-                            }
-                        </View>
-                    </View>
-                    {gestionItem == 'L' ?
+                    {itemSLProd.gestionItem == 'L' ?
                         <View style={{ flexDirection: 'row', marginTop: 10, width: '100%', justifyContent: 'center' }}>
                             <Icon
                                 raised
@@ -219,58 +278,58 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
 
                                 }} />
                         </View> : ''
-
                     }
 
                     <View style={{ width: '50%', rowGap: 20, alignSelf: 'center', marginTop: 30 }}>
                         <Button
                             title="Confirmar y enviar"
                             onPress={() => {
-                                Alert.alert('Advertencia', '¿Estas seguro de continuar con la asignación?', [,
-                                    {
-                                        text: 'Si', onPress: () => {
-                                            let suma = Number(cantidad) + countQty;
-
-                                            if (suma <= pendiente) {
-                                                console.log('Es menor o igual', pendiente + ' : ' + suma)
-                                                ActualizarSerieLoteTransfer(cantidad);
-                                                setCantidad('1')
-                                            } else {
-                                                Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de elementos a asignar!', [
-                                                    { text: 'OK', onPress: () => { } },
-                                                ]);
-                                            }
-                                            setIsModalSerieLote(!isModalSerieLote);
-                                            //setIsLoading(true)
-                                            if (isEnter == true) {
-                                                setIsEnter(false)
-                                            }
+                                setIsEnter(false)
+                                switch (route.params.gestionItem) {
+                                    case 'S':
+                                        if (cantidadContados < Number(route.params.totalQty)) {
+                                            console.log('Cantidad serie contadas: ' + cantidadContados + 'Total: ' + route.params.totalQty)
+                                            guardarOrdenProdSL(itemSLProd, route.params, 1);
+                                            setCantidadContados(cantidadContados + 1)
+                                            setIsModalSLProd(!isModalSLProd);
+                                        } else {
+                                            Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de articulos!', [
+                                                { text: 'OK', onPress: () => { } },
+                                            ]);
                                         }
-                                    },
-                                    {
-                                        text: 'Cancelar',
-                                        onPress: () => setCantidad('1'),
-                                        style: 'cancel',
-                                    }
-                                ])
+                                        break;
+                                    case 'L':
+                                        if (cantidadContados + Number(cantidad) <= Number(route.params.totalQty)) {
+                                            console.log('Cantidad lotes contados: ' + cantidadContados + 'Total: ' + route.params.totalQty)
+                                            guardarOrdenProdSL(itemSLProd, route.params, cantidad);
+                                            setCantidadContados(cantidadContados + Number(cantidad))
+                                            setIsModalSLProd(!isModalSLProd);
+                                        } else {
+                                            Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de articulos!', [
+                                                { text: 'OK', onPress: () => { } },
+                                            ]);
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }}
                             disabled={cantidad > 0 ? false : true}
                         />
                         <Button
-                            title="Cancelar"
+                            title="Salir"
                             onPress={() => {
-                                setIsModalSerieLote(!isModalSerieLote);
-                                setItemTraslado([]);
-                                if (isEnter == true) {
-                                    setIsEnter(false)
-                                }
+                                setIsEnter(false)
+                                setIsModalSLProd(!isModalSLProd);
+                                setItemSLProd([]);
+                                setCantidad('1')
+
                             }}
                             buttonStyle={{ backgroundColor: '#F80000' }}
-                            disabled={enableButton}
                         />
                     </View>
                 </ScrollView>
-            </Modal> */}
+            </Modal>
         </View>
     )
 }
@@ -351,5 +410,36 @@ const styles = StyleSheet.create({
     ButtonTransferir: {
         backgroundColor: '#3b5958',
         width: 'auto'
+    },
+    itemTexto: {
+        height: 80,
+        width: 'auto',
+        paddingHorizontal: 10,
+        justifyContent: 'center'
+    },
+    texto: {
+        padding: 10,
+        color: '#384347',
+        fontWeight: 'bold',
+        fontSize: 26,
+    },
+    badge: {
+        color: '#fff',
+        fontSize: 26,
+    },
+    rowBack: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        borderRadius: 0,
+        height: 90,
+        marginVertical: 2,
+    },
+    rowBackButtonEliminar: {
+        backgroundColor: '#ff0000',
+        width: 150,
+        height: 90,
+        textAlign: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
     }
 });

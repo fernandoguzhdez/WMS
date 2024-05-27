@@ -1,38 +1,67 @@
 import React, { useEffect, useContext, useState } from 'react'
 import { AuthContext } from '../../../contex/AuthContext';
 import axios from 'axios';
-import { View, StyleSheet, Text, Alert, useWindowDimensions, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, Alert, useWindowDimensions, FlatList, TouchableOpacity, ScrollView, TouchableHighlight } from 'react-native';
 import { Input, Card, lightColors } from '@rneui/themed';
-import { Button, SearchBar, Icon } from 'react-native-elements'
+import { Button, SearchBar, Icon, Badge } from 'react-native-elements'
 import Modal from "react-native-modal";
 import { SelectList } from 'react-native-dropdown-select-list'
 import Spinner from 'react-native-loading-spinner-overlay';
+import { SwipeListView } from 'react-native-swipe-list-view';
+import moment from "moment";
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
 
 export function ArticulosProduccion({ navigation, route }) {
 
-    const { url, tokenInfo, isLoading, tablaArtProd, dataArtProd, filterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, guardarOrdenProdArt, isModalArtProd, setIsModalArtProd } = useContext(AuthContext);
+    const { url, isEnter, tokenInfo, isLoading, tablaArtProd, dataArtProd, filterDataArtProd, setFilterDataArtProd, setDataArtProd, valueArtProd, setValueArtProd, filterArtProd, guardarOrdenProdArt, isModalArtProd,
+        setIsModalArtProd, itemSeleccionadoProd, setItemSeleccionadoProd, splitCadenaEscaner, isModalSLProd, setIsModalSLProd } = useContext(AuthContext);
     const [cantidad, setCantidad] = useState('1');
     const windowsWidth = useWindowDimensions().width;
     const [enableButton, setEnableButton] = useState(false);
-    const [itemSeleccionado, setItemSeleccionado] = useState([])
+    const [swipe, setSwipe] = useState(-150);
 
 
     useEffect(() => {
         tablaArtProd(route.params.docEntry)
+        limpiarVariables()
     }, []);
 
+    const limpiarVariables = () => {
+        const unsubscribe = navigation.addListener('beforeRemove', () => {
+            setValueArtProd(null)
+            setItemSeleccionadoProd([])
+            setFilterDataArtProd([])
+            setDataArtProd([])
+        });
+        return unsubscribe;
+    }
+
+    useEffect(() => {
+        if (isEnter == true) {
+            navigation.navigate('SeriesLotesProduccion', itemSeleccionadoProd)
+            setIsModalSLProd(!isModalSLProd)
+        }
+    }, [isEnter])
+
     const handleSubmit = () => {
+        splitCadenaEscaner(valueArtProd, route.params.docEntry, 'EnterProduccionArticulo')
+
+    }
+
+    const seleccionarArticulo = (item) => {
+        setIsModalArtProd(!isModalArtProd)
+        setItemSeleccionadoProd(item)
     }
 
     // Componente de tarjeta reutilizable
-    const Card = ({ item, btnTitle, metodo, icono }) => (
+    /* const Card = ({ item, btnTitle, metodo, icono }) => (
         <View style={{ ...styles.card, width: windowsWidth > 500 ? 350 : 300 }}>
             <View style={styles.header}>
                 <Text style={styles.title}>{item.itemCode}</Text>
             </View>
             <View style={styles.ContainerContent}>
                 <Text style={styles.content}>{item.itemDesc}</Text>
-                {/* <Text style={styles.content}>{gestionItem == 'I' ? 'Articulo' : gestionItem == 'S' ? 'Serie' : 'Lote'}</Text> */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ flexDirection: 'col' }}>
                         <View style={{ alignItems: 'center' }}>
@@ -54,7 +83,7 @@ export function ArticulosProduccion({ navigation, route }) {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <View style={{ alignItems: 'center' }}>
                         <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Contados</Text>
-                        <Text style={styles.content}>{item.counted}</Text>
+                        <Text style={styles.content}>{item.countQty}</Text>
                     </View>
                     <View style={{ alignItems: 'center' }}>
                         <Text style={{ fontSize: 28, color: '#9b9b9b', fontWeight: 'bold' }}>Total</Text>
@@ -81,7 +110,33 @@ export function ArticulosProduccion({ navigation, route }) {
                 />
             </View>
         </View>
-    );
+    ); */
+
+    const ItemView = ({ item }) => {
+        return (
+            // Flat List Item
+            <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry}
+                onPress={() => {
+                    item.gestionItem == 'I' ? seleccionarArticulo(item) : navigation.navigate('SeriesLotesProduccion', item)
+                    //setIsLoading(true)
+                }} >
+                <View style={{ backgroundColor: '#f1f3f4', opacity: item.status == 'C' ? 0.4 : 1, justifyContent: 'flex-start', flexDirection: 'row' }}  >
+                    <View style={styles.itemTexto}>
+                        <Text style={styles.texto}>
+                            {item.itemCode}  |
+                            Almacen: {item.whsCode}
+                            {item.binEntry == 0 ? '' : `  |  Ubicacion:  ` + item.binEntry}
+                            {'  |  Contados: ' + item.countQty} {'  |  Total: ' + item.totalQty + '    '}
+                            {item.gestionItem == 'S' ? <Badge status="success" value='  Serie  ' style={styles.badge} /> : item.gestionItem == 'L' ? <Badge status="warning" value='  Lote  ' style={styles.badge} /> : ''}
+                        </Text>
+                        <Text style={{ ...styles.texto }}>
+                            {item.itemDesc.substring(0, 60 - 3)}...
+                        </Text>
+                    </View>
+                </View>
+            </TouchableHighlight>
+        );
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff', height: 'auto', overflow: 'hidden' }}>
@@ -100,12 +155,52 @@ export function ArticulosProduccion({ navigation, route }) {
                 cancelButtonProps={{}}
                 onCancel={() => console.log('cancelando...')}
                 value={valueArtProd}
-                //onSubmitEditing={handleSubmit}
+                onSubmitEditing={handleSubmit}
                 inputStyle={{ backgroundColor: '#f4f4f4', borderRadius: 10, color: '#000' }}
                 containerStyle={{ backgroundColor: '#f4f4f4', borderRadius: 50, margin: 20, padding: 0, borderColor: '#f4f4f4' }}
                 theme
             />
-            <FlatList
+            <SwipeListView
+                data={filterDataArtProd}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={ItemView}
+                renderHiddenItem={(data, rowMap) => (
+                    <View style={styles.rowBack}>
+                        <Button
+                            buttonStyle={{ ...styles.rowBackButtonEliminar, display: data.item.status == 'C' ? 'none' : 'flex' }}
+                            onPress={() => {
+                                Alert.alert('Info', '¿Estas seguro de continuar con la transferencia?', [
+                                    {
+                                        text: 'Cancelar',
+                                        onPress: () => console.log('Cancel Pressed'),
+                                        style: 'cancel',
+                                    },
+                                    {
+                                        text: 'Enviar', onPress: () => {
+                                            //enviarTransferencia(data.item.docEntry);
+                                            //setIsLoading(true);
+                                        }
+                                    },
+                                ]);
+                            }}
+                            /* icon={
+                                <Icon
+                                    reverse
+                                    name="trash"
+                                    size={20}
+                                    color="#fff"
+                                />
+                            } */
+                            iconTop
+                            title="Transferir"
+                        />
+                    </View>
+                )}
+                rightOpenValue={swipe}
+                stopLeftSwipe={-1}
+                stopRightSwipe={-1}
+            />
+            {/* <FlatList
                 data={filterDataArtProd}
                 renderItem={({ item }) =>
                     <Card
@@ -114,26 +209,25 @@ export function ArticulosProduccion({ navigation, route }) {
                         icono={item.gestionItem == 'I' ? 'arrows-alt' : 'eye'}
                         metodo={item.gestionItem == 'I' ? () => {
                             setIsModalArtProd(!isModalArtProd)
-                            setItemSeleccionado(item)
+                            setItemSeleccionadoProd(item)
                         } : () => {
                             navigation.navigate('SeriesLotesProduccion', item)
-                            console.log(item)
                         }}
                     />}
                 keyExtractor={(item, index) => index.toString()}
                 numColumns={windowsWidth > 500 ? 2 : 1}
                 contentContainerStyle={styles.flatListContent}
-            />
+            /> */}
 
             <Modal isVisible={isModalArtProd} style={{}} animationInTiming={1000} >
                 <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15 }}>
                     <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar cantidad</Text>
                     <View style={{ alignItems: 'center', marginVertical: 40 }}>
                         <Text style={styles.content}>
-                            {itemSeleccionado.itemCode}
+                            {itemSeleccionadoProd.itemCode}
                         </Text>
                         <Text style={styles.content}>
-                            {itemSeleccionado.itemDesc}
+                            {itemSeleccionadoProd.itemDesc}
                         </Text>
                     </View>
 
@@ -184,13 +278,13 @@ export function ArticulosProduccion({ navigation, route }) {
                         <Button
                             title="Confirmar y enviar"
                             onPress={() => {
-                                setItemSeleccionado([])
-                                if (Number(itemSeleccionado.countQty) + Number(cantidad) <= Number(itemSeleccionado.totalQty)) {
-                                    guardarOrdenProdArt(itemSeleccionado, cantidad);
+                                setItemSeleccionadoProd([])
+                                if (Number(itemSeleccionadoProd.countQty) + Number(cantidad) <= Number(itemSeleccionadoProd.totalQty)) {
+                                    guardarOrdenProdArt(itemSeleccionadoProd, cantidad);
                                     setCantidad('1')
                                     setIsModalArtProd(!isModalArtProd);
                                 } else {
-                                    console.log('Suma...', cantidad + ' : ' + Number(itemSeleccionado.countQty))
+                                    console.log('Suma...', cantidad + ' : ' + Number(itemSeleccionadoProd.countQty))
                                     Alert.alert('Advertencia', '¡La cantidad sobrepasa el total de articulos!', [
                                         { text: 'OK', onPress: () => { } },
                                     ]);
@@ -202,9 +296,9 @@ export function ArticulosProduccion({ navigation, route }) {
                             title="Cancelar"
                             onPress={() => {
                                 setIsModalArtProd(!isModalArtProd);
-                                setItemSeleccionado([]);
+                                setItemSeleccionadoProd([]);
                                 setCantidad('1')
-                                setItemSeleccionado([])
+                                setItemSeleccionadoProd([])
                             }}
                             buttonStyle={{ backgroundColor: '#F80000' }}
                         />
@@ -224,9 +318,7 @@ export function ArticulosProduccion({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 10
-    },
+
     card: {
         height: 'auto',
         margin: '3.5%', // Ajusta el margen entre las tarjetas
@@ -294,5 +386,43 @@ const styles = StyleSheet.create({
         backgroundColor: '#800000', // Change the color as needed
         borderRadius: 28,
         elevation: 8, // Android shadow
+    },
+    itemStyle: {
+        padding: 10,
+    },
+    container: {
+        flex: 1,
+        marginTop: 10
+    },
+    itemTexto: {
+        height: 110,
+        width: 'auto',
+        paddingHorizontal: 10,
+        justifyContent: 'center'
+    },
+    texto: {
+        padding: 10,
+        color: '#384347',
+        fontWeight: 'bold',
+        fontSize: 26,
+    },
+    badge: {
+        color: '#fff',
+        fontSize: 26,
+    },
+    rowBack: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        borderRadius: 0,
+        height: 90,
+        marginVertical: 2,
+    },
+    rowBackButtonEliminar: {
+        backgroundColor: '#ff0000',
+        width: 150,
+        height: 90,
+        textAlign: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
     }
 });
