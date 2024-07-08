@@ -19,7 +19,7 @@ import axios from 'axios';
 
 export function ConteoInventario({ navigation }) {
 
-  const { filteredDataSource, searchFilterFunction, search, activarBuscadorConteoInv, setActivarBuscadorConteoInv, LimpiarPantallaConteoInventario, setActivarBuscadorArticulos, 
+  const { filteredDataSource, searchFilterFunction, search, activarBuscadorConteoInv, setActivarBuscadorConteoInv, LimpiarPantallaConteoInventario, setActivarBuscadorArticulos,
     url, tokenInfo, getInventario, setIsLoadingCerrarConteo, isLoadingCerrarConteo, setIsLoading, isLoading, getArticulos } = useContext(AuthContext);
   const [swipe, setSwipe] = useState(-100);
   const [deshabilitarBoton, setDeshabilitarBoton] = useState(false);
@@ -44,6 +44,9 @@ export function ConteoInventario({ navigation }) {
     })
       .catch(error => {
         setIsLoadingCerrarConteo(false)
+        Alert.alert('Error', `Error al cerrar : ${error}`, [
+          { text: 'OK', onPress: () => { setFilteredDocsProduccion([]), setDocsProduccion([]), getDocsProduccion() } },
+        ]);
       });
   }
 

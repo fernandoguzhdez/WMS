@@ -126,7 +126,7 @@ export function ArticulosProduccion({ navigation, route }) {
                             {item.itemCode}  |
                             Almacen: {item.whsCode}
                             {item.binEntry == 0 ? '' : `  |  Ubicacion:  ` + item.binEntry}
-                            {'  |  Contados: ' + item.countQty} {'  |  Total: ' + item.totalQty + '    '}
+                            {'  |  Enviados: ' + item.countQty} {'  |  Cantidad Requerida: ' + item.totalQty + '    '}
                             {item.gestionItem == 'S' ? <Badge status="success" value='  Serie  ' style={styles.badge} /> : item.gestionItem == 'L' ? <Badge status="warning" value='  Lote  ' style={styles.badge} /> : ''}
                         </Text>
                         <Text style={{ ...styles.texto }}>

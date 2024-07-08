@@ -31,6 +31,7 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
     }
 
     useEffect(() => {
+        console.log('que hay aqui...', route.params.gestionItem)
         tablaSLProd(route.params)
         cargarTablaSLProdEnviado(route.params)
         limpiarVariables()
@@ -120,7 +121,8 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
                             {item.idCode}  |
                             Almacen: {item.whsCode}
                             {item.binEntry == 0 ? '' : `  |  Ubicacion:  ` + item.binEntry}
-                            {'  |  Cantidad: ' + item.quantityDisp + '    '}
+                            {route.params.gestionItem == 'L' ? '  |  Cantidad de lote: ' : '  |  Cantidad de serie: '}
+                            {item.quantityDisp}
                         </Text>
                     </View>
                 </View>
@@ -147,7 +149,7 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
                 theme
             />
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                <Button
+                {/* <Button
                     buttonStyle={{ ...styles.ButtonTransferir }}
                     titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
                     onPress={() => {
@@ -175,7 +177,7 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
                         />
                     }
                     title="Enviar"
-                />
+                /> */}
                 <Button
                     buttonStyle={{ backgroundColor: '#3b5958', width: 'auto' }}
                     titleStyle={{ fontSize: windowsWidth > 500 ? 20 : 16, padding: 10 }}
@@ -207,21 +209,30 @@ export const SeriesLotesProduccion = ({ navigation, route }) => {
                 numColumns={windowsWidth > 500 ? 2 : 1}
                 contentContainerStyle={styles.flatListContent}
             /> */}
+            {filterDataSLProd == null ?
+                <View style={{flex: .8, justifyContent: 'center', alignSelf: 'center'}}>
+                    <Icon
+                        name='exclamation-circle'
+                        size={70}
+                        iconStyle={{ fontWeight: 'bold', color: '#8888' }}
+                        type='font-awesome' />
+                    <Text style={{fontSize: 30}}>No se encontraron resultados</Text>
+                </View> :
+                <SwipeListView
+                    data={filterDataSLProd}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={ItemView}
+                    style={{ marginVertical: 20 }}
+                    renderHiddenItem={(data, rowMap) => (
+                        <View style={styles.rowBack}>
 
-            <SwipeListView
-                data={filterDataSLProd}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={ItemView}
-                style={{ marginVertical: 20 }}
-                renderHiddenItem={(data, rowMap) => (
-                    <View style={styles.rowBack}>
-
-                    </View>
-                )}
-                rightOpenValue={swipe}
-                stopLeftSwipe={-1}
-                stopRightSwipe={-1}
-            />
+                        </View>
+                    )}
+                    rightOpenValue={swipe}
+                    stopLeftSwipe={-1}
+                    stopRightSwipe={-1}
+                />
+            }
 
             <Modal isVisible={isModalSLProd} style={{}} animationInTiming={1000} >
                 <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, padding: windowsWidth > 500 ? 30 : 15 }}>

@@ -129,7 +129,7 @@ export function Articulos({ navigation }) {
             // Flat List Item
             <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry}
                 onPress={() => {
-                    item.gestionItem == 'I' ? esArticulo(item) : navigation.navigate('SeriesLotesProduccion', item)
+                    item.gestionItem == 'I' ? esArticulo(item) : navigation.navigate('SeriesLotes', item)
                     //setIsLoading(true)
                 }} >
                 <View style={{ backgroundColor: '#f1f3f4', opacity: item.status == 'C' ? 0.4 : 1, justifyContent: 'flex-start', flexDirection: 'row' }}  >

@@ -21,8 +21,7 @@ export function Produccion({ navigation, route }) {
                             //getInventario();
                             break;
                         case 'PrdEmi':
-                            console.log('PrdEmi')
-                            //navigation.navigate('DocsOrdenDeFabricacion');
+                            navigation.navigate('DocsReciboDeProduccion');
                             //getInventario();
                             break;
 

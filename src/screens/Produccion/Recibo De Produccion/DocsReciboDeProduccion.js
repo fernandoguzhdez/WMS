@@ -9,35 +9,38 @@ import moment from "moment";
 import { Badge, SearchBar, Button } from 'react-native-elements'
 import { SwipeListView } from 'react-native-swipe-list-view';
 import Spinner from 'react-native-loading-spinner-overlay';
+import ComponenteCantidad from '../../../componentes/componenteCantidad';
+import Modal from "react-native-modal";
+import { Overlay } from '@rneui/themed';
 
-export function DocsOrdenDeFabricacion({ navigation }) {
+export function DocsReciboDeProduccion({ navigation }) {
 
-    const { setIsLoading, isLoading, getAlmacenes, setIdCodeSL, setSerieLoteTransfer, enviarDatosProduccion, getDocsProduccion, setDocsProduccion,
-        docsProduccion, filteredDocsProduccion, setFilteredDocsProduccion } = useContext(AuthContext);
-    const [isModalVisible, setModalVisible] = useState(false);
-    const toggleModal = () => {
-        setModalVisible(!isModalVisible);
-    };
+    const { url, tokenInfo, setIsLoading, isLoading, enviarDatosProduccion, getDocsReciboProd, filteredDocsReciboProd, setFilteredDocsReciboProd,
+        docsReciboProd, setDocsReciboProd, cargarSLEnvRecProd, isModalSLReciboProd, setIsModalSLReciboProd, visibleFormCantidad, setVisibleFormCantidad,
+        setFiltroDataSLReciboProd, setDataSLReciboProd, itemSelectRecProd, setItemSelectRecProd, splitCadenaEscaner, searchReciboProd, setSearchReciboProd,
+        enviarDatosReciboProd, artSelectRecProd, setArtSelectRecProd } = useContext(AuthContext);
+
     const [activarBuscadorSolicitudT, setActivarBuscadorSolicitudT] = useState(true);
-    const [searchSolicitudT, setSearchSolicitudT] = useState(null);
     const [swipe, setSwipe] = useState(-150);
 
     const limpiarVariables = () => {
         const unsubscribe = navigation.addListener('beforeRemove', () => {
-            setSearchSolicitudT(null)
-            setFilteredDocsProduccion([])
-            setDocsProduccion([])
+            setSearchReciboProd(null)
+            setFilteredDocsReciboProd([])
+            setDocsReciboProd([])
         });
         return unsubscribe;
     }
 
+    const toggleOverlay = (item) => {
+        setVisibleFormCantidad(!visibleFormCantidad);
+    };
+
     useEffect(() => {
         limpiarVariables()
-        getAlmacenes();
-        getDocsProduccion()
+        setIsLoading(true)
+        getDocsReciboProd()
     }, []);
-
-
 
     const searchFilterFunctionSolicitudT = (text) => {
         // Check if searched text is not blank
@@ -45,32 +48,46 @@ export function DocsOrdenDeFabricacion({ navigation }) {
             // Inserted text is not blank
             // Filter the tablaSolicitudTransfer
             // Update FilteredDataSource
-            setFilteredDocsProduccion(
-                filteredDocsProduccion.filter((item) =>
+            setFilteredDocsReciboProd(
+                filteredDocsReciboProd.filter((item) =>
                     item.prodName.toUpperCase().includes(text.toUpperCase()) || item.docNum.toString().includes(text.toString())
                 )
             );
-            setSearchSolicitudT(text);
+            setSearchReciboProd(text);
         } else {
             // Inserted text is blank
             // Update FilteredDataSource with tablaSolicitudTransfer
-            setFilteredDocsProduccion(docsProduccion);
-            setSearchSolicitudT(text);
+            setFilteredDocsReciboProd(docsReciboProd);
+            setSearchReciboProd(text);
         }
     };
+
+    const handleSubmit = () => {
+        splitCadenaEscaner(searchReciboProd, route.params.docEntry, 'EnterDocsReciboProd')
+        //Se vuelve a llenar la tabla ya que al usar el enter deja en blanco la ventana
+        // setItemsTraslados(tablaItemsTraslados)
+    }
 
     const ItemView = ({ item }) => {
         return (
             // Flat List Item
             <TouchableHighlight disabled={item.status == 'C' ? true : false} style={{ marginVertical: 2 }} key={item.docEntry}
                 onPress={() => {
-                    navigation.navigate('ArticulosProduccion', item);
-                    //setIsLoading(true)
+                    setArtSelectRecProd(item);
+                    if (item.gestionItem == 'I') {
+                        //setIsModalSLReciboProd(!isModalSLReciboProd)
+                        toggleOverlay(item);
+                    } else {
+                        navigation.navigate('SeriesLotesReciboDeProduccion', item);
+                        cargarSLEnvRecProd(item)
+                        setFiltroDataSLReciboProd([])
+                        setDataSLReciboProd([])
+                    }
                 }} >
                 <View style={{ backgroundColor: '#3b5998', opacity: item.status == 'C' ? 0.4 : 1, justifyContent: 'space-around', flexDirection: 'row' }}  >
                     <View style={styles.itemTexto}>
                         <Text style={{ ...styles.texto, fontSize: 20 }}>
-                            No. {item.docNum}  |  Almacen {item.warehouse}
+                            No. {item.docNum}  |  Almacen {item.warehouse}  |  Recibidos {item.countedQty}  |  Cantidad Planificada {item.plannedQty}
                         </Text>
                         <Text style={styles.texto}>
                             {item.itemCode}  |  {item.prodName}
@@ -78,8 +95,11 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                     </View>
 
                     <View style={{ height: 90, width: '20%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 }}>
+                        {/* <Text style={styles.texto}>
+                            {item.gestionItem == 'S' ? 'Serie' : item.gestionItem == 'L' ? 'Lote' : ''}
+                        </Text> */}
                         <Text style={styles.texto}>
-                            {moment(item.createDate).utc().format('DD/MM/YYYY')}
+                            {moment(item.fecha_fabricacion).utc().format('DD/MM/YYYY')}
                         </Text>
                         {
                             item.status == 'O' ?
@@ -109,7 +129,8 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                         onChangeText={(text) => searchFilterFunctionSolicitudT(text)}
                         onClear={(text) => searchFilterFunctionSolicitudT('')}
                         placeholder="Buscar..."
-                        value={searchSolicitudT}
+                        value={searchReciboProd}
+                        onSubmitEditing={handleSubmit}
                         inputStyle={{ backgroundColor: '#fff', borderRadius: 10, color: '#000' }}
                         containerStyle={{ backgroundColor: '#fff', borderRadius: 50, margin: 20, padding: 0, borderColor: '#fff' }}
                         theme
@@ -118,7 +139,7 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                 }
 
                 <SwipeListView
-                    data={filteredDocsProduccion}
+                    data={filteredDocsReciboProd}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={ItemView}
                     renderHiddenItem={(data, rowMap) => (
@@ -134,7 +155,7 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                                         },
                                         {
                                             text: 'Enviar', onPress: () => {
-                                                enviarDatosProduccion(data.item.docEntry);
+                                                enviarDatosReciboProd(data.item.docEntry);
                                                 setIsLoading(true);
                                             }
                                         },
@@ -149,13 +170,32 @@ export function DocsOrdenDeFabricacion({ navigation }) {
                                     />
                                 } */
                                 iconTop
-                                title="Enviar"
+                                title="Cerrar"
                             />
                         </View>
                     )}
                     rightOpenValue={swipe}
                     stopLeftSwipe={-1}
                 />
+
+                <Modal isVisible={isModalSLReciboProd} style={{ width: 200 }} animationInTiming={1000} >
+                    <ScrollView style={{ backgroundColor: '#ffffff', borderRadius: 10, width: 200 }}>
+                        <Text style={{ fontSize: 26, textAlign: 'center', margin: 20 }}>Confirmar cantidad</Text>
+                        <ComponenteCantidad articulo={artSelectRecProd} />
+                        <Button
+                            title="Cancelar"
+                            onPress={() => {
+                                setIsModalSLReciboProd(!isModalSLReciboProd);
+                            }}
+                            buttonStyle={{ backgroundColor: '#F80000' }}
+                        />
+                    </ScrollView>
+                </Modal>
+
+                <Overlay isVisible={visibleFormCantidad} onBackdropPress={toggleOverlay} overlayStyle={{ width: '50%', height: 'auto' }}>
+                    <Text style={{ fontSize: 26, textAlign: 'center', margin: 10 }}>Confirmar cantidad</Text>
+                    <ComponenteCantidad itemSeleccionado={artSelectRecProd} tipo='actualizarArticulo' />
+                </Overlay>
 
             </View>
         </SafeAreaView>

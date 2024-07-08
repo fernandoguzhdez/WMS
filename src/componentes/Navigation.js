@@ -27,6 +27,8 @@ import { DocsOrdenDeFabricacion } from '../screens/Produccion/Orden De Fabricaci
 import { Produccion } from '../screens/Produccion/Produccion';
 import { SeriesLotesProduccion } from '../screens/Produccion/Orden De Fabricacion/SeriesLotesProduccion';
 import { SeriesLotesProdEnviados } from '../screens/Produccion/Orden De Fabricacion/SeriesLotesProdEnviados';
+import { DocsReciboDeProduccion } from '../screens/Produccion/Recibo De Produccion/DocsReciboDeProduccion';
+import { SeriesLotesReciboDeProduccion } from '../screens/Produccion/Recibo De Produccion/SeriesLotesReciboDeProduccion';
 
 const Stack = createNativeStackNavigator();
 
@@ -108,6 +110,9 @@ export function Navigation() {
                 <Stack.Screen name="ArticulosProduccion" component={ArticulosProduccion} options={{ headerShown: true, title: 'Articulos', }} />
                 <Stack.Screen name="SeriesLotesProduccion" component={SeriesLotesProduccion} options={{ headerShown: true, title: 'Series/Lotes', }} />
                 <Stack.Screen name="SeriesLotesProdEnviados" component={SeriesLotesProdEnviados} options={{ headerShown: true, title: 'Series/Lotes', }} />
+                <Stack.Screen name="DocsReciboDeProduccion" component={DocsReciboDeProduccion} options={{ headerShown: true, title: 'Documentos', }} />
+                <Stack.Screen name="SeriesLotesReciboDeProduccion" component={SeriesLotesReciboDeProduccion} options={{ headerShown: true, title: 'Serie/Lotes Definidos', }} />
+                
             </Stack.Navigator>
         </NavigationContainer>
     );

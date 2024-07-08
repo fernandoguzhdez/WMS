@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
     const [searchDetalleInvSL, setSearchDetalleInvSL] = useState('');
     const [searchDetalleInv, setSearchDetalleInv] = useState('');
     const [dataCompleteDI, setDataCompleteDI] = useState([]);
-    //VARIABLES PARA EL MODULO DE PRODUCCION
+    //VARIABLES PARA EL MODULO DE PRODUCCION - ORDEN DE FABRICACION
     const [docsProduccion, setDocsProduccion] = useState([])
     const [filteredDocsProduccion, setFilteredDocsProduccion] = useState([])
     const [dataArtProd, setDataArtProd] = useState([])
@@ -112,7 +112,23 @@ export const AuthProvider = ({ children }) => {
     const [isModalSLProd, setIsModalSLProd] = useState(false)
     const [dataSLProdEnviado, setDataSLProdEnviado] = useState([])
     const [itemSLProd, setItemSLProd] = useState([])
-
+    //VARIABLES PARA EL MODULO DE PRODUCCION - RECIBO DE PRODUCCION
+    const [docsReciboProd, setDocsReciboProd] = useState([])
+    const [filteredDocsReciboProd, setFilteredDocsReciboProd] = useState([])
+    const [dataSLReciboProd, setDataSLReciboProd] = useState([])
+    const [filtroDataSLReciboProd, setFiltroDataSLReciboProd] = useState([])
+    const [displayForm, setDisplayform] = useState(false)
+    const [valueSLReciboProd, setValueSLReciboProd] = useState(null)
+    const [visibleFormCantidad, setVisibleFormCantidad] = useState(false);
+    const [artSelectRecProd, setArtSelectRecProd] = useState([])
+    const [itemSelectRecProd, setItemSelectRecProd] = useState([])
+    const [searchReciboProd, setSearchReciboProd] = useState(null);
+    const [warehouses, setWarehouses] = useState([]);
+    const [selectedWarehouse, setSelectedWarehouse] = useState(null);
+    const [locations, setLocations] = useState([]);
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    let locationData;
+    const [selectedStatus, setSelectedStatus] = useState(null);
 
     const splitCadenaEscaner = (dato1, dato2, modulo) => {
         setBarcodeItemTraslados(null)
@@ -1571,7 +1587,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    //METODOS PARA EL MODULO DE PRODUCCION
+    //PRODUCCION - ORDEN DE FABRICACION
     const getDocsProduccion = () => {
         setIsLoading(true)
         // Set headers
@@ -1582,6 +1598,7 @@ export const AuthProvider = ({ children }) => {
         // Make GET request
         axios.get(`${url}/api/Production/Get_Documents`, { headers })
             .then(response => {
+                console.log('Documentos de produccion...', response.data.owor)
                 setIsLoading(false)
                 setDocsProduccion(response.data.owor)
                 setFilteredDocsProduccion(response.data.owor)
@@ -1634,7 +1651,7 @@ export const AuthProvider = ({ children }) => {
     const tablaSLProd = async (item, idCode, accion) => {
         setDataSLProd([])
         setFilterDataSLProd([])
-        //setIsLoading(true)
+        setIsLoading(true)
         // Set headers
         const headers = {
             'Content-Type': 'application/json',
@@ -1643,12 +1660,19 @@ export const AuthProvider = ({ children }) => {
         // Make GET request
         await axios.get(`${url}/api/Production/Get_Disp_SerAndBatchs?ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}&WhsCode=${item.whsCode}&BinCode=${item.binCode}`, { headers })
             .then(response => {
-                setDataSLProd(response.data.serialxManbach)
-                setFilterDataSLProd(response.data.serialxManbach)
-                //setIsLoading(false)
+                let resultData = response.data.serialxManbach;
+                if (resultData.length === 0) {
+                    setDataSLProd(null)
+                    setFilterDataSLProd(null)
+                } else {
+                    setDataSLProd(resultData)
+                    setFilterDataSLProd(resultData)
+                }
+
+                setIsLoading(false)
 
                 if (accion == 'escaner') {
-                    let filtradoSerieLote = FiltrarSerieLoteProd(response.data.serialxManbach, idCode)
+                    let filtradoSerieLote = FiltrarSerieLoteProd(resultData, idCode)
                     if (filtradoSerieLote.length == 0) {
                         Alert.alert('Advertencia', '¡No se encontro el item escaneado!', [
                             {
@@ -1755,6 +1779,7 @@ export const AuthProvider = ({ children }) => {
                     console.log('no hay datos, deberia dar undefined...')
                 } else {
                     setDataSLProdEnviado(arrayseriesLotes)
+                    //aqui habia algo pero no se que fue, le di control Z     u.u
                     console.log('si hay datos....', arrayseriesLotes)
                 }
             })
@@ -1899,28 +1924,317 @@ export const AuthProvider = ({ children }) => {
             'Authorization': `Bearer ${tokenInfo.token}`
         };
         // Make GET request
-        await axios.post(`${url}/api/Produccion/Close?IdCounted=${docEntry}`, { docEntry }, { headers }
-        )
-            .then(response => {
-                console.log('Respuesta...', response.status)
-                setIsLoading(false)
-                setDataSLProdEnviado([])
-                setDataSLProd([])
-                setValueSLProd(null)
-                setItemSLProd([])
-                setDataSLProdEnviado([])
-                setValueArtProd(null)
-                setItemSeleccionadoProd([])
-                setFilterDataArtProd([])
-                setDataArtProd([])
-                tablaArtProd(docEntry)
-            })
+        await axios.post(`${url}/api/Production/Close?IdCounted=${docEntry}`, { docEntry }, { headers }
+        ).then(response => {
+            console.log('Respuesta...', response)
+            Alert.alert('Info', 'Orden enviada!', [
+                { text: 'OK', onPress: () => { setFilteredDocsProduccion([]), setDocsProduccion([]), getDocsProduccion() } },
+            ]);
+            setIsLoading(false)
+            setDataSLProdEnviado([])
+            setDataSLProd([])
+            setValueSLProd(null)
+            setItemSLProd([])
+            setDataSLProdEnviado([])
+            setValueArtProd(null)
+            setItemSeleccionadoProd([])
+            setFilterDataArtProd([])
+            setDataArtProd([])
+            tablaArtProd(docEntry)
+        })
             .catch(error => {
                 setIsLoading(false)
                 Alert.alert('Error', `Error al cerrar : ${error}`, [
                     { text: 'OK', onPress: () => { setFilteredDocsProduccion([]), setDocsProduccion([]), getDocsProduccion() } },
                 ]);
                 console.log('Error al cerrar', error.message)
+            });
+    }
+
+    // PRODUCCION - RECIBO DE PRODUCCION
+    const getDocsReciboProd = () => {
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        axios.get(`${url}/api/ReciboProduction/Get_OrdersProductions`, { headers })
+            .then(response => {
+                setIsLoading(false)
+                setDocsReciboProd(response.data.owor)
+                setFilteredDocsReciboProd(response.data.owor)
+            })
+            .catch(error => {
+                setIsLoading(false)
+                console.error('No hay solicitudes de transferencia', error);
+            });
+    }
+
+    const cargarSLEnvRecProd = (item) => {
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        axios.get(`${url}/api/ReciboProduction/Get_SerAndBatchs?IdDocumentCnt=${item.docEntry}&LineNum=${item.docNum}&ItemCode=${item.itemCode}&GestionItem=${item.gestionItem}`, { headers })
+            .then(response => {
+                let data = response.data.SerialxManbach;
+                if (data == undefined) {
+                    setDataSLReciboProd([])
+                    setFiltroDataSLReciboProd([])
+                } else {
+                    setDataSLReciboProd(response.data.SerialxManbach)
+                    setFiltroDataSLReciboProd(response.data.SerialxManbach)
+                }
+            })
+            .catch(error => {
+                Alert.alert('Error', `Error al cargar los datos: ${error}`, [
+                    { text: 'OK', onPress: () => { } },
+                ]);
+            });
+    }
+
+    const existeSLReciboProd = (articulo, idCode, cantidad) => {
+        const match = dataSLReciboProd.some(item => item.idCode.toUpperCase() === idCode)
+
+        if (match === true) {
+            Alert.alert('Info', '¡Ya existe un elemento con el mismo nombre!', [
+                {
+                    text: 'OK', onPress: () => {
+                        setSelectedWarehouse(null)
+                        setSelectedLocation(null)
+                        setLocations([])
+                        
+                    }
+                },
+            ]);
+        } else {
+            EnviarDatosReciboProd(articulo, idCode, cantidad)
+        }
+    }
+
+    const EnviarDatosReciboProd = (articulo, idCode, cantidad) => {
+        dataSLReciboProd.push({
+            "baseLineNum": 0,
+            "serManLineNum": 0,
+            "gestionItem": articulo.gestionItem,
+            "itemCode": articulo.itemCode,
+            "idCode": idCode,
+            "sysNumber": 0,
+            "quantityCounted": Number(cantidad),
+            "whsCode": selectedWarehouse || articulo.warehouse,
+            "binEntry": selectedLocation || articulo.binEntry,
+            "binCode": 0,
+            "updateDate": articulo.createDate,
+            "status": "R",
+            "ClaseOp": selectedStatus.length == undefined ? "C" : selectedStatus.slice(0, 1)
+        })
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        axios
+            .put(`${url}/api/ReciboProduction/Update_RecProduction`, {
+                "docEntry": articulo.docEntry,
+                "itemCode": articulo.itemCode,
+                "barCode": articulo.barCode,
+                "itemDesc": articulo.prodName,
+                "gestionItem": articulo.gestionItem,
+                "whsCode": selectedWarehouse || articulo.warehouse,
+                "binEntry": selectedLocation || articulo.binEntry,
+                "binCode": 0,
+                "quantityCounted": articulo.gestionItem == 'I' ? Number(cantidad) : Number(articulo.countedQty) + Number(cantidad),
+                "claseOp": selectedStatus.length == undefined ? "C" : selectedStatus.slice(0, 1),
+                "serialandManbach": articulo.gestionItem == 'I' ? [] : dataSLReciboProd
+            }, { headers })
+            .then((response) => {
+                Alert.alert('Info', '¡agregado con exitó!', [
+                    {
+                        text: 'OK', onPress: () => {
+                            cargarSLEnvRecProd(articulo)
+                            getDocsReciboProd()
+                            sumarCantidadRecProd(cantidad)
+                            setSelectedWarehouse(articulo.warehouse)
+                            setSelectedLocation(null)
+                            setLocations(articulo.binEntry)
+                            obtenerAlmacen()
+                            setSelectedStatus(null)
+                        }
+                    },
+                ]);
+            })
+            .catch(error => {
+                Alert.alert('Error', `Error al agregar elemento : ${error}`, [
+                    {
+                        text: 'OK', onPress: () => {
+                            setSelectedWarehouse(null)
+                            setSelectedLocation(null)
+                            setLocations([])
+                            setSelectedStatus(null)
+                        }
+                    },
+                ]);
+            });
+    }
+
+    const eliminarSLRecProd = (id, articulo, item) => {
+        const newArray = dataSLReciboProd.filter((elemento, index) => index !== id);
+
+        // Set headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        axios
+            .put(`${url}/api/ReciboProduction/Update_RecProduction`, {
+                "docEntry": articulo.docEntry,
+                "itemCode": articulo.itemCode,
+                "barCode": articulo.barCode,
+                "itemDesc": articulo.prodName,
+                "gestionItem": articulo.gestionItem,
+                "whsCode": articulo.warehouse,
+                "binEntry": articulo.binEntry,
+                "binCode": 0,
+                "claseOp": "",
+                "quantityCounted": Number(articulo.countedQty) - Number(item.quantityCounted),
+                "serialandManbach": newArray
+            }, { headers })
+            .then((response) => {
+                setIsLoading(false)
+                Alert.alert('Info', '¡Elemento Eliminado!', [
+                    {
+                        text: 'OK', onPress: () => {
+                            cargarSLEnvRecProd(articulo)
+                            getDocsReciboProd()
+                            restarCantidadRecProd(item.quantityCounted)
+                        }
+                    },
+                ]);
+            })
+            .catch(error => {
+                console.log(error)
+                setIsLoading(false)
+            });
+    }
+
+    const editarSLReciboProd = (articulo, itemSeleccionado, newValue, cantidad) => {
+
+        const matchDuplicado = dataSLReciboProd.some(item => item.idCode.toUpperCase() === newValue)
+        console.log()
+
+        /* if (matchDuplicado == false) { */
+            const updatedData = dataSLReciboProd.map(item =>
+                item.idCode === itemSeleccionado.idCode ? { ...item, idCode: newValue, quantityCounted: cantidad, whsCode: selectedWarehouse, binEntry: selectedLocation, ClaseOp: selectedStatus.length == undefined ? itemSeleccionado.ClaseOp : selectedStatus.slice(0, 1) } : item
+            );
+            const cantidadTotalModificada = updatedData.reduce((acc, item) => acc + Number(item.quantityCounted), 0);
+
+            // Set headers
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${tokenInfo.token}`
+            };
+            axios
+                .put(`${url}/api/ReciboProduction/Update_RecProduction`, {
+                    "docEntry": articulo.docEntry,
+                    "itemCode": articulo.itemCode,
+                    "barCode": articulo.barCode,
+                    "itemDesc": articulo.prodName,
+                    "gestionItem": articulo.gestionItem,
+                    "whsCode": articulo.warehouse,
+                    "binEntry": articulo.binEntry,
+                    "binCode": 0,
+                    "quantityCounted": cantidadTotalModificada,
+                    "claseOp": selectedStatus.length == undefined ? "C" : selectedStatus.slice(0, 1),
+                    "serialandManbach": updatedData
+                }, { headers })
+                .then((response) => {
+                    Alert.alert('Info', '¡Actualizado con exitó!', [
+                        {
+                            text: 'OK', onPress: () => {
+                                cargarSLEnvRecProd(articulo)
+                                getDocsReciboProd()
+                                setVisibleFormCantidad(!visibleFormCantidad)
+                            }
+                        },
+                    ]);
+                })
+                .catch(error => {
+                    Alert.alert('Error', `Error al actualizar elemento : ${error}`, [
+                        { text: 'OK', onPress: () => { } },
+                    ]);
+                });
+        /* } else {
+            Alert.alert('Advertencia', '¡El elemento que acabas de ingresar ya existe!', [
+                {
+                    text: 'OK', onPress: () => {
+                    }
+                },
+            ]);
+        } */
+    }
+
+    const enviarDatosReciboProd = async (docEntry) => {
+        const headers = {
+            Accept: "application/json",
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        };
+        // Make GET request
+        await axios.post(`${url}/api/ReciboProduction/Close?IdCounted=${docEntry}`, { docEntry }, { headers }
+        ).then(response => {
+            setIsLoading(false)
+            Alert.alert('Info', 'Datos del documento enviado!', [
+                {
+                    text: 'OK', onPress: () => {
+                        setFilteredDocsReciboProd([]), setDocsReciboProd([]), getDocsReciboProd()
+                    }
+                }
+            ]);
+
+        })
+            .catch(error => {
+                setIsLoading(false)
+                Alert.alert('Error', `Error al enviar los datos : ${error}`, [
+                    { text: 'OK', onPress: () => { setFilteredDocsReciboProd([]), setDocsReciboProd([]), getDocsReciboProd() } },
+                ]);
+            });
+    }
+
+    const sumarCantidadRecProd = (cantidad) => {
+        setArtSelectRecProd(prevData => ({
+            ...prevData,
+            countedQty: Number(prevData.countedQty) + Number(cantidad)
+        }))
+        console.log('resultado suma...', artSelectRecProd)
+    }
+
+    const restarCantidadRecProd = (cantidad) => {
+        setArtSelectRecProd(prevData => ({
+            ...prevData,
+            countedQty: Number(prevData.countedQty) - Number(cantidad)
+        }))
+
+    }
+
+    const obtenerAlmacen = () => {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenInfo.token}`
+        }
+        axios.get(`${url}/api/Inventory/Get_WhareHouse`, { headers })
+            .then(response => {
+                const whsData = response.data.owhs.map(wh => ({
+                    key: wh.whsCode,
+                    value: wh.whsName,
+                    bins: wh.bins
+                }));
+                setWarehouses(whsData);
+            })
+            .catch(error => {
+                console.error(error);
             });
     }
 
@@ -1975,9 +2289,13 @@ export const AuthProvider = ({ children }) => {
                 setUbicacionOri, ubicacionDesOri, isEnter, setIsEnter, ubicacionDes, setUbicacionDes, masterDetails, setMasterDetails, cargarMasterDetails, datosScan, setDatosScan, fetchDataDetalleInvSL, data, setData, dataComplete, setDataComplete, allDataLoaded, setAllDataLoaded, dataDetalleInv, setDataDetalleInv, paramsDetalleInvSL, setParamsDetalleInvSL,
                 searchDetalleInvSL, setSearchDetalleInvSL, handleSearchDetalleInvSL, searchDetalleInv, setSearchDetalleInv, handleSearchDetalleInv, dataCompleteDI, setDataCompleteDI, fetchDataDetalleInv, splitCadenaEscaner,
                 idCodeSL, setIdCodeSL,
-                //VARIABLES DEL MODULO DE PRODUCCION
+                //VARIABLES DEL MODULO DE PRODUCCION - ORDEN DE FABRICACION
                 tablaArtProd, dataArtProd, setDataArtProd, filterDataArtProd, setFilterDataArtProd, valueArtProd, setValueArtProd, filterArtProd, dataSLProd, setDataSLProd, filterDataSLProd, setFilterDataSLProd, tablaSLProd, tablaSLProd, valueSLProd, setValueSLProd, FilterSLProd, guardarOrdenProdArt, isModalArtProd, setIsModalArtProd, itemSeleccionadoProd, setItemSeleccionadoProd,
-                cargarTablaSLProdEnviado, isModalSLProd, setIsModalSLProd, guardarOrdenProdSL, dataSLProdEnviado, setDataSLProdEnviado, itemSLProd, setItemSLProd, eliminarSLProdEnviado, enviarDatosProduccion, getDocsProduccion, docsProduccion, setDocsProduccion, filteredDocsProduccion, setFilteredDocsProduccion
+                cargarTablaSLProdEnviado, isModalSLProd, setIsModalSLProd, guardarOrdenProdSL, dataSLProdEnviado, setDataSLProdEnviado, itemSLProd, setItemSLProd, eliminarSLProdEnviado, enviarDatosProduccion, getDocsProduccion, docsProduccion, setDocsProduccion, filteredDocsProduccion, setFilteredDocsProduccion,
+                //VARIABLES DEL MODULO DE PRODUCCION - RECIBO DE PRODUCCION
+                getDocsReciboProd, docsReciboProd, setDocsReciboProd, filteredDocsReciboProd, setFilteredDocsReciboProd, dataSLReciboProd, setDataSLReciboProd, displayForm, setDisplayform, valueSLReciboProd, setValueSLReciboProd, EnviarDatosReciboProd, cargarSLEnvRecProd, existeSLReciboProd,
+                visibleFormCantidad, setVisibleFormCantidad, filtroDataSLReciboProd, setFiltroDataSLReciboProd, eliminarSLRecProd, itemSelectRecProd, setItemSelectRecProd, editarSLReciboProd, searchReciboProd, setSearchReciboProd, enviarDatosReciboProd, artSelectRecProd, setArtSelectRecProd,
+                sumarCantidadRecProd, restarCantidadRecProd, warehouses, setWarehouses, selectedWarehouse, setSelectedWarehouse, locations, setLocations, selectedLocation, setSelectedLocation, obtenerAlmacen, selectedStatus, setSelectedStatus, locationData
             }}
         >
             {children}
