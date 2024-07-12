@@ -6,6 +6,7 @@ import Menu from './Menu';
 import Inventario from './Inventario/Inventario';
 import Compras from './Compras';
 import Ventas from './Ventas';
+import MenuSettings from '../screens/Settings/MenuSettings'
 //React
 import { AuthContext } from '../contex/AuthContext';
 import React, { useContext, useEffect } from 'react';
@@ -13,7 +14,7 @@ import { Button, TouchableOpacity } from 'react-native'
 //Icons
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faHome } from '@fortawesome/free-solid-svg-icons/faHome'
-import { faGear } from '@fortawesome/free-solid-svg-icons/faGear'
+import { faCog } from '@fortawesome/free-solid-svg-icons/faCog'
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons/faChevronLeft'
 
 const Drawer = createDrawerNavigator();
@@ -36,6 +37,14 @@ export function Home({ navigation }) {
           <FontAwesomeIcon icon={faHome} style={{ alignSelf: 'center', color: 'lightblue' }} size={30} />
         )
       }} />
+      <Drawer.Screen name="Configuraciones" component={MenuSettings} options={{
+        headerShown: true,
+        headerTitleAlign: 'center',
+        drawerLabel: 'Settings',
+        drawerIcon: ({ color }) => (
+          <FontAwesomeIcon icon={faCog} style={{ alignSelf: 'center', color: 'lightblue' }} size={30} />
+        )
+      }} />
       <Drawer.Screen name="Inventario" component={Inventario} options={{
         drawerItemStyle: { display: 'none' },
         headerLeft: () => (
@@ -44,14 +53,14 @@ export function Home({ navigation }) {
           </TouchableOpacity>
         )
       }} />
-      <Drawer.Screen name="Ventas" component={Ventas} options={{
+      {/* <Drawer.Screen name="Ventas" component={Ventas} options={{
         drawerItemStyle: { display: 'none' }, drawerItemStyle: { display: 'none' },
         headerLeft: () => (
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <FontAwesomeIcon icon={faChevronLeft} style={{ color: 'gray', left: 15 }} size={30} />
           </TouchableOpacity>
         )
-      }} />
+      }} /> */}
       <Drawer.Screen name="Compras" component={Compras} options={{
         drawerItemStyle: { display: 'none' },
         headerLeft: () => (

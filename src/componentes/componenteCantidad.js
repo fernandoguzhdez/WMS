@@ -70,17 +70,22 @@ const ComponenteCantidad = ({ articulo, itemSeleccionado, tipo }) => {
                     data={statusOptions}
                     setSelected={setSelectedStatus}
                     placeholder="Selecciona una acción..."
-                    search={false}
                     defaultOption={{ key: 0, value: "Completar" }}
                     boxStyles={styles.selectBox}
+                    inputStyles={styles.textoBox}
+                    dropdownTextStyles={styles.dropdownTextStyles}
+                    searchPlaceholder="Buscar..."
+
                 />
                 <SelectList
                     data={warehouses}
                     setSelected={handleWarehouseChange}
                     placeholder="Selecciona un almacén..."
-                    search={false}
                     defaultOption={{ key: itemSeleccionado.warehouse, value: itemSeleccionado.warehouse }}
                     boxStyles={styles.selectBox}
+                    inputStyles={styles.textoBox}
+                    dropdownTextStyles={styles.dropdownTextStyles}
+                    searchPlaceholder="Buscar..."
                 />
                 {locations.length > 0 && (
                     <>
@@ -88,9 +93,11 @@ const ComponenteCantidad = ({ articulo, itemSeleccionado, tipo }) => {
                             data={locations}
                             setSelected={setSelectedLocation}
                             placeholder="Selecciona una ubicación..."
-                            search={false}
                             defaultOption={{ key: itemSeleccionado.binEntry, value: itemSeleccionado.binEntry }}
                             boxStyles={styles.selectBox}
+                            inputStyles={styles.textoBox}
+                            dropdownTextStyles={styles.dropdownTextStyles}
+                            searchPlaceholder="Buscar..."
                         />
                     </>
                 )}
@@ -152,7 +159,7 @@ const ComponenteCantidad = ({ articulo, itemSeleccionado, tipo }) => {
                                 //setResetKey(prevKey => prevKey + 1);
                                 switch (tipo) {
                                     case 'actualizarArticulo':
-                                        console.log('Actualizar Item....',artSelectRecProd.countedQty + ' : ' + artSelectRecProd.plannedQty + ' : ' + cantidad)
+                                        console.log('Actualizar Item....', artSelectRecProd.countedQty + ' : ' + artSelectRecProd.plannedQty + ' : ' + cantidad)
                                         const cantidadMayor = verificarCantidad(artSelectRecProd.countedQty, artSelectRecProd.plannedQty, cantidad)
                                         if (cantidadMayor == true) {
                                             Alert.alert('Advertencia', '¡La cantidad ingresada excede el limite total!', [
@@ -167,7 +174,7 @@ const ComponenteCantidad = ({ articulo, itemSeleccionado, tipo }) => {
                                         break;
 
                                     case 'insertarSL':
-                                        console.log('Insertandoo....',artSelectRecProd.countedQty + ' : ' + artSelectRecProd.plannedQty + ' : ' + cantidad)
+                                        console.log('Insertandoo....', artSelectRecProd.countedQty + ' : ' + artSelectRecProd.plannedQty + ' : ' + cantidad)
                                         const cantidadMayorSL = verificarCantidad(artSelectRecProd.countedQty, artSelectRecProd.plannedQty, cantidad)
                                         if (cantidadMayorSL == true) {
                                             Alert.alert('Advertencia', '¡La cantidad ingresada excede el limite total!', [
@@ -243,7 +250,13 @@ const styles = StyleSheet.create({
         marginBottom: 8
     },
     selectBox: {
-        marginBottom: 20
+        marginVertical: 10,
+    },
+    textoBox: {
+        color: '#808080'
+    },
+    dropdownTextStyles: {
+        color: '#808080'
     }
 })
 

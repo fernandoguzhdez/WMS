@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import React, { useState } from 'react'
 
 export default function Ventas ({ navigation, route }) {
-    console.log(route.params.detalleSubMenus)
     return (
         <View style={styles.container}>
             {route.params.detalleSubMenus.map((key) =>

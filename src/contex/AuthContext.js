@@ -2016,6 +2016,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const EnviarDatosReciboProd = (articulo, idCode, cantidad) => {
+        console.log('selectedStatus....', selectedStatus)
         dataSLReciboProd.push({
             "baseLineNum": 0,
             "serManLineNum": 0,
@@ -2029,7 +2030,7 @@ export const AuthProvider = ({ children }) => {
             "binCode": 0,
             "updateDate": articulo.createDate,
             "status": "R",
-            "ClaseOp": selectedStatus.length == undefined ? "C" : selectedStatus.slice(0, 1)
+            "ClaseOp": selectedStatus == 0 ? "C" : selectedStatus.slice(0, 1)
         })
         // Set headers
         const headers = {
@@ -2047,7 +2048,7 @@ export const AuthProvider = ({ children }) => {
                 "binEntry": selectedLocation || articulo.binEntry,
                 "binCode": 0,
                 "quantityCounted": articulo.gestionItem == 'I' ? Number(cantidad) : Number(articulo.countedQty) + Number(cantidad),
-                "claseOp": selectedStatus.length == undefined ? "C" : selectedStatus.slice(0, 1),
+                "claseOp": selectedStatus == 0 ? "C" : selectedStatus.slice(0, 1),
                 "serialandManbach": articulo.gestionItem == 'I' ? [] : dataSLReciboProd
             }, { headers })
             .then((response) => {
@@ -2061,7 +2062,7 @@ export const AuthProvider = ({ children }) => {
                             setSelectedLocation(null)
                             setLocations(articulo.binEntry)
                             obtenerAlmacen()
-                            setSelectedStatus(null)
+                            setSelectedStatus(0)
                         }
                     },
                 ]);
@@ -2073,7 +2074,7 @@ export const AuthProvider = ({ children }) => {
                             setSelectedWarehouse(null)
                             setSelectedLocation(null)
                             setLocations([])
-                            setSelectedStatus(null)
+                            setSelectedStatus(0)
                         }
                     },
                 ]);

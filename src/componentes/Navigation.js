@@ -29,6 +29,8 @@ import { SeriesLotesProduccion } from '../screens/Produccion/Orden De Fabricacio
 import { SeriesLotesProdEnviados } from '../screens/Produccion/Orden De Fabricacion/SeriesLotesProdEnviados';
 import { DocsReciboDeProduccion } from '../screens/Produccion/Recibo De Produccion/DocsReciboDeProduccion';
 import { SeriesLotesReciboDeProduccion } from '../screens/Produccion/Recibo De Produccion/SeriesLotesReciboDeProduccion';
+import { Etiquetas } from '../screens/Settings/Etiquetas';
+import { ConfigEtiquetasDocsReciboProd } from '../screens/Produccion/Recibo De Produccion/ConfigEtiquetasDocsReciboProd'
 
 const Stack = createNativeStackNavigator();
 
@@ -112,6 +114,8 @@ export function Navigation() {
                 <Stack.Screen name="SeriesLotesProdEnviados" component={SeriesLotesProdEnviados} options={{ headerShown: true, title: 'Series/Lotes', }} />
                 <Stack.Screen name="DocsReciboDeProduccion" component={DocsReciboDeProduccion} options={{ headerShown: true, title: 'Documentos', }} />
                 <Stack.Screen name="SeriesLotesReciboDeProduccion" component={SeriesLotesReciboDeProduccion} options={{ headerShown: true, title: 'Serie/Lotes Definidos', }} />
+                <Stack.Screen name="Etiquetas" component={Etiquetas} options={{ headerShown: true, title: 'Actualizar etiquetas', }} />
+                <Stack.Screen name="ConfigEtiquetasDocsReciboProd" component={ConfigEtiquetasDocsReciboProd} options={{ headerShown: true, title: 'Edicion - Documentos recibo de produccion', }} />
                 
             </Stack.Navigator>
         </NavigationContainer>
